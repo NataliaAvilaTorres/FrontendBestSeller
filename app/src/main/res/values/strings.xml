@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Best Seller</string>
+    <string name="nombre">Nombre</string>
+    <string name="correo">Correo electrónico</string>
+    <string name="ciudad">Ciudad</string>
+    <string name="contrasena">Contraseña</string>
+    <string name="sesion">Iniciar Sesión</string>
+    <string name="registrar">Registrarse</string>
+
+    <string-array name="ciudades_array">
+        <item>Selecciona tu ciudad</item>
+        <item>Bogotá</item>
+        <item>Medellín</item>
+        <item>Cali</item>
+        <item>Barranquilla</item>
+        <item>Cartagena</item>
+    </string-array>
+
+</resources>
