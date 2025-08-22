@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <!-- Barra superior con botón regresar y buscador -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/btnRegresar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/btn_atras"
+                    android:contentDescription="Regresar" />
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/searchview"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/barrabusqueda"
+                    app:iconifiedByDefault="false"
+                    app:queryHint="¿Qué producto buscas?"
+                    />
+            </LinearLayout>
+
+            <!-- Filtros -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="Ordenar por"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <!-- Contenedor de filtros -->
+            <LinearLayout
+                android:id="@+id/filtersLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <!-- Spinner A-Z -->
+                <Spinner
+                    android:id="@+id/spinnerOrdenAZ"
+                    android:background="@drawable/fondo2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:backgroundTint="#2A5270"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:spinnerMode="dropdown"
+                    android:layout_marginStart="10dp"
+                    android:popupBackground="#2A5270" />
+
+                <!-- Spinner Precios -->
+
+                <Spinner
+                    android:id="@+id/spinnerPrecio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:backgroundTint="#2A5270"
+                    android:background="@drawable/fondo2"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:spinnerMode="dropdown"
+                    android:layout_marginStart="30dp"
+                    android:popupBackground="#2A5270" />
+
+                <!-- Botón Categoría -->
+                <Button
+                    android:id="@+id/btnCategoria"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="18dp"
+                    android:backgroundTint="#2A5270"
+                    android:text="Categoría"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+
+            <!-- Coincidencias -->
+            <TextView
+                android:id="@+id/textViewCoincidencias"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="Coincidencias"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- Lista de productos -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewProductos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

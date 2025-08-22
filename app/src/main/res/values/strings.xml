@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Best Seller</string>
     <string name="nombre">Nombre</string>
+    <string name="usuario">Usuario</string>
     <string name="correo">Correo electrónico</string>
+    <string name="iniciar">Iniciar Sesión</string>
     <string name="ciudad">Ciudad</string>
     <string name="contrasena">Contraseña</string>
     <string name="sesion">Iniciar Sesión</string>
@@ -14,6 +16,16 @@
         <item>Cali</item>
         <item>Barranquilla</item>
         <item>Cartagena</item>
+    </string-array>
+
+    <string-array name="orden_az_array">
+        <item>A - Z</item>
+        <item>Z - A</item>
+    </string-array>
+
+    <string-array name="orden_precio_array">
+        <item>Menor a Mayor</item>
+        <item>Mayor a Menor</item>
     </string-array>
 
 </resources>

@@ -8,4 +8,7 @@ public interface ApiService {
 
     @POST("api/usuarios/registrar")
     suspend fun registrarUsuario(@Body usuario: Usuario)
+
+    @POST("api/usuarios/login")
+    suspend fun login(@Body usuario: Usuario): Respuesta
 }
