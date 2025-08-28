@@ -14,18 +14,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BestSellerFrontend">
         <activity
-            android:name=".Actividad_ListaProductos"
+            android:name=".Actividad_IniciarSesion"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Actividad_Registro">
-        </activity>
-        <activity android:name=".Actividad_IniciarSesion">
-        </activity>
+        <activity android:name=".Actividad_Registro" />
+        <activity android:name=".Actividad_Navegacion_Usuario" />
+
     </application>
 
 </manifest>

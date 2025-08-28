@@ -10,11 +10,18 @@
     android:layout_height="match_parent"
     tools:context=".Actividad_Registro">
 
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp"/>
+
     <!-- Atras -->
     <ImageView
+        android:id="@+id/btn_atras"
         android:layout_width="72dp"
-        android:layout_height="70dp"
-        android:src="@drawable/btn_atras"
+        android:layout_height="55dp"
+        android:src="@drawable/ic_atras"
         tools:layout_editor_absoluteX="30dp"
         tools:layout_editor_absoluteY="22dp" />
     <!-- Logo Best Seller -->

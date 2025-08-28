@@ -3,6 +3,7 @@ package com.example.bestsellerfrontend
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.GET
 
 public interface ApiService {
 
@@ -11,4 +12,7 @@ public interface ApiService {
 
     @POST("api/usuarios/login")
     suspend fun login(@Body usuario: Usuario): Respuesta
+
+    @GET("api/productos/listar")
+    suspend fun listarProductos(): List<Producto>
 }

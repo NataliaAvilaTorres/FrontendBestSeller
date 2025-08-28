@@ -83,4 +83,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <TextView
+        android:id="@+id/textoCuenta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_tienes_una_cuenta"
+        app:layout_constraintTop_toBottomOf="@id/iniciarSesionButton"
+        android:textSize="18sp"
+        android:textColor="#005F73"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/registrate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registrate"
+        app:layout_constraintTop_toBottomOf="@id/textoCuenta"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#005F73"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:clickable="true"
+        android:focusable="true"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

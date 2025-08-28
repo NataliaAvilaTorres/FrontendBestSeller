@@ -8,6 +8,17 @@
     <string name="contrasena">Contraseña</string>
     <string name="sesion">Iniciar Sesión</string>
     <string name="registrar">Registrarse</string>
+    <string name="_0_00">$0.000</string>
+    <string name="categoria">Categoria</string>
+    <string name="product">Product</string>
+    <string name="camara" />
+    <string name="oferta">oferta</string>
+    <string name="ubicacion">ubicacion</string>
+    <string name="buscar">buscar</string>
+    <string name="inicio">inicio</string>
+    <string name="escanear">Escanear</string>
+    <string name="no_tienes_una_cuenta">¿No tienes una cuenta?</string>
+    <string name="registrate">Registrate</string>
 
     <string-array name="ciudades_array">
         <item>Selecciona tu ciudad</item>

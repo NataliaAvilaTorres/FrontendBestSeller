@@ -1,41 +1,97 @@
 package com.example.bestsellerfrontend
 
-import android.widget.ArrayAdapter
-import android.widget.Spinner
-import android.widget.SearchView
-import android.widget.EditText
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-class Actividad_ListaProductos : AppCompatActivity() {
+class ListaProductosFragment : Fragment() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.actividad_listaproductos)
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: ProductoAdaptador
+    private lateinit var apiService: ApiService
+    private var productos: List<Producto> = emptyList()
 
-        val spinnerOrdenAZ = findViewById<Spinner>(R.id.spinnerOrdenAZ)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.actividad_lista_productos, container, false)
 
+        // Configuración del RecyclerView
+        recyclerView = view.findViewById(R.id.recyclerViewProductos)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = ProductoAdaptador(emptyList())
+        recyclerView.adapter = adapter
+
+        // Retrofit
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8090/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        apiService = retrofit.create(ApiService::class.java)
+
+        // Cargar productos desde API
+        lifecycleScope.launch {
+            try {
+                productos = apiService.listarProductos()
+                adapter.actualizarLista(productos)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // Configuración de Spinners
+        val spinnerOrdenAZ = view.findViewById<android.widget.Spinner>(R.id.spinnerOrdenAZ)
         val opcionesAZ = listOf("A-Z", "Z-A")
+        val adapterAZ = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesAZ)
+        adapterAZ.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerOrdenAZ.adapter = adapterAZ
 
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            opcionesAZ
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerOrdenAZ.adapter = adapter
-
-        val spinnerPrecio = findViewById<Spinner>(R.id.spinnerPrecio)
-
+        val spinnerPrecio = view.findViewById<android.widget.Spinner>(R.id.spinnerPrecio)
         val opcionesPrecio = listOf("Menor a mayor", "Mayor a menor")
+        val adapterPrecio = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesPrecio)
+        adapterPrecio.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerPrecio.adapter = adapterPrecio
 
-        val adapter2 = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            opcionesPrecio
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerPrecio.adapter = adapter2
+        // Listener del Spinner A-Z
+        spinnerOrdenAZ.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                if (productos.isNotEmpty()) {
+                    val listaOrdenada = when (position) {
+                        0 -> productos.sortedBy { it.nombre }
+                        1 -> productos.sortedByDescending { it.nombre }
+                        else -> productos
+                    }
+                    adapter.actualizarLista(listaOrdenada)
+                }
+            }
 
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        // Listener del Spinner Precio
+        spinnerPrecio.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                if (productos.isNotEmpty()) {
+                    val listaOrdenada = when (position) {
+                        0 -> productos.sortedBy { it.precio }
+                        1 -> productos.sortedByDescending { it.precio }
+                        else -> productos
+                    }
+                    adapter.actualizarLista(listaOrdenada)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        return view
     }
 }

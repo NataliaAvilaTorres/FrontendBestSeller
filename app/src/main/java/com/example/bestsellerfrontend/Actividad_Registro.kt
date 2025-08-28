@@ -14,7 +14,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
+import android.widget.ImageView
 import retrofit2.converter.gson.GsonConverterFactory
+import android.content.Intent
+
 
 class Actividad_Registro : AppCompatActivity() {
 
@@ -29,6 +32,11 @@ class Actividad_Registro : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        val btnAtras = findViewById<ImageView>(R.id.btn_atras)
+        btnAtras.setOnClickListener {
+            finish()
         }
 
         // Configuración Retrofit
@@ -73,11 +81,16 @@ class Actividad_Registro : AppCompatActivity() {
                 try {
                     apiService.registrarUsuario(usuario)
                     Toast.makeText(this@Actividad_Registro, "Usuario guardado", Toast.LENGTH_SHORT).show()
-                    // Limpiar campos
+
                     nombreEditarTexto.text?.clear()
                     correoEditarTexto.text?.clear()
                     contrasenaEditarTexto.text?.clear()
                     ciudadSpinner.setSelection(0)
+
+                    val intent = Intent(this@Actividad_Registro, Actividad_Navegacion_Usuario::class.java)
+                    startActivity(intent)
+                    finish()
+
                 } catch (e: Exception) {
                     Toast.makeText(this@Actividad_Registro, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
                 } finally {

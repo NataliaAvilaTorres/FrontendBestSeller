@@ -6,20 +6,20 @@
     <color name="bg_dark_blue">#2A5270</color>
     <color name="bg_blue">#519DD6</color>
     <color name="yellow">#EFB156</color>
-    <color name="red">#EB4B4B</color>
     <color name="rojo">#AE2012</color>
-    <color name="salmon">#FF6666</color>
-    <color name="sandyBrown">#FFB072</color>
-    <color name="peach">#FFE3B3</color>
-    <color name="magnolia">#FCF7FF</color>
-    <color name="brown">#541c0a</color>
-    <color name="gray">#474B4E</color>
-    <color name="graylight">#9E9D9B</color>
-    <color name="green">#28752F</color>
+    <color name="verde">#0A9396</color>
+
 
 
     <!--Colores de Campos de Text-->
-
     <color name="input_active">#EFB156</color>
     <color name="input_inactive">#9E9D9B</color>
+
+
+        <color name="purple_200">#FFBB86FC</color>
+        <color name="purple_500">#FF6200EE</color>
+        <color name="purple_700">#FF3700B3</color>
+        <color name="teal_200">#FF03DAC5</color>
+        <color name="teal_700">#FF018786</color>
+        <color name="lavender">#8692f7</color>
 </resources>
