@@ -7,10 +7,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
+import java.util.*
 
 class OfertaAdaptador(private var listaOfertas: List<Oferta>) :
     RecyclerView.Adapter<OfertaAdaptador.OfertaViewHolder>() {
-
 
     class OfertaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imagenOferta: ImageView = itemView.findViewById(R.id.imagenOferta)
@@ -31,8 +32,12 @@ class OfertaAdaptador(private var listaOfertas: List<Oferta>) :
 
         holder.textNombre.text = oferta.nombreOferta
         holder.textDescripcion.text = oferta.descripcionOferta
-        holder.textFecha.text = oferta.fechaOferta.toString()
 
+        val fecha = Date(oferta.fechaOferta)
+        val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val fechaFormateada = formato.format(fecha)
+
+        holder.textFecha.text = fechaFormateada
 
         Glide.with(holder.itemView.context)
             .load(oferta.urlImagen)

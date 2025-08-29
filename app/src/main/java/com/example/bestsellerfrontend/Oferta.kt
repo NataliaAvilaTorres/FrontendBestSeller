@@ -6,7 +6,7 @@ data class Oferta(
     val nombreOferta: String,
     val descripcionOferta: String,
     val tiendaNombre: String,
-    val fechaOferta: Date,
+    val fechaOferta: Long,
     val producto: Producto,
     val urlImagen: String)
 
