@@ -14,34 +14,38 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class ListaProductosFragment : Fragment() {
+class ListaOfertasFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: ProductoAdaptador
+    private lateinit var adapter: OfertaAdaptador
     private lateinit var apiService: ApiService
-    private var productos: List<Producto> = emptyList()
+    private var ofertas: List<Oferta> = emptyList()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.actividad_lista_productos, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.actividad_lista_ofertas, container, false)
 
         // Configuración del RecyclerView
-        recyclerView = view.findViewById(R.id.recyclerViewProductos)
+        recyclerView = view.findViewById(R.id.recyclerViewOfertas)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ProductoAdaptador(emptyList())
+        adapter = OfertaAdaptador(emptyList())
         recyclerView.adapter = adapter
 
         // Retrofit
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/")
+            .baseUrl("http://10.0.2.2:8090/") // Cambia según tu backend
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // Cargar productos desde API
+        // Cargar ofertas desde API
         lifecycleScope.launch {
             try {
-                productos = apiService.listarProductos()
-                adapter.actualizarLista(productos)
+                ofertas = apiService.listarOfertas()
+                adapter.actualizarLista(ofertas)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -62,12 +66,12 @@ class ListaProductosFragment : Fragment() {
 
         // Listener del Spinner A-Z
         spinnerOrdenAZ.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (productos.isNotEmpty()) {
+            override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {
+                if (ofertas.isNotEmpty()) {
                     val listaOrdenada = when (position) {
-                        0 -> productos.sortedBy { it.nombre }
-                        1 -> productos.sortedByDescending { it.nombre }
-                        else -> productos
+                        0 -> ofertas.sortedBy { it.producto.nombre }
+                        1 -> ofertas.sortedByDescending { it.producto.nombre }
+                        else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)
                 }
@@ -78,12 +82,12 @@ class ListaProductosFragment : Fragment() {
 
         // Listener del Spinner Precio
         spinnerPrecio.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (productos.isNotEmpty()) {
+            override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {
+                if (ofertas.isNotEmpty()) {
                     val listaOrdenada = when (position) {
-                        0 -> productos.sortedBy { it.precio }
-                        1 -> productos.sortedByDescending { it.precio }
-                        else -> productos
+                        0 -> ofertas.sortedBy { it.producto.precio }
+                        1 -> ofertas.sortedByDescending { it.producto.precio }
+                        else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)
                 }
@@ -91,6 +95,7 @@ class ListaProductosFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
+
         return view
     }
 }

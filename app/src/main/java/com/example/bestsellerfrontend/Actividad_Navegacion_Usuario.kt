@@ -26,6 +26,12 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
                         .commit()
                     true
                 }
+                R.id.oferta -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.contenedor, ListaOfertasFragment())
+                        .commit()
+                    true
+                }
                 else -> false
             }
         }

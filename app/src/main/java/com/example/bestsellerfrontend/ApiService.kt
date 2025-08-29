@@ -15,4 +15,7 @@ public interface ApiService {
 
     @GET("api/productos/listar")
     suspend fun listarProductos(): List<Producto>
+
+    @GET("api/ofertas/listar")
+    suspend fun listarOfertas(): List<Oferta>
 }

@@ -12,8 +12,12 @@
     <string name="categoria">Categoria</string>
     <string name="product">Product</string>
     <string name="camara" />
-    <string name="oferta">oferta</string>
+    <string name="oferta">Nombre oferta</string>
+    <string name="desc_oferta">Descripción de la oferta</string>
     <string name="ubicacion">ubicacion</string>
+    <string name="ver_ubicacion">Ver ubicación</string>
+    <string name="foro_ofertas">Foro de ofertas</string>
+    <string name="comunidad">Comunidad</string>
     <string name="buscar">buscar</string>
     <string name="inicio">inicio</string>
     <string name="escanear">Escanear</string>
