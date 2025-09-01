@@ -1,5 +1,6 @@
 package com.example.bestsellerfrontend
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,11 +38,25 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
         Glide.with(holder.itemView.context)
             .load(producto.urlImagen)
             .into(holder.imageProducto)
+
+        // Agregar evento clic en todo el item
+        holder.itemView.setOnClickListener {
+            val context = holder.itemView.context
+            val intent = Intent(context, Actividad_vista_detalles_producto::class.java)
+
+            // Enviar datos del producto (puedes usar Parcelable o Serializable)
+            intent.putExtra("producto_nombre", producto.nombre)
+            intent.putExtra("producto_categoria", producto.categoria)
+            intent.putExtra("producto_precio", producto.precio)
+            intent.putExtra("producto_imagen", producto.urlImagen)
+
+            context.startActivity(intent)
+        }
     }
 
     override fun getItemCount(): Int = listaProductos.size
 
-    // Método para actualizar lista
+    // Metodo para actualizar lista
     fun actualizarLista(nuevaLista: List<Producto>) {
         listaProductos = nuevaLista
         notifyDataSetChanged()
