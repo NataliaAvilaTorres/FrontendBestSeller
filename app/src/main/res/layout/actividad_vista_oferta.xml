@@ -103,8 +103,6 @@
                 app:layout_constraintTop_toBottomOf="@id/imagenOferta"
                 app:layout_constraintStart_toStartOf="parent" />
 
-
-
             <ImageButton
                 android:id="@+id/btnLike"
                 android:layout_width="40dp"
