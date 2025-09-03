@@ -56,8 +56,8 @@
 
                 <ImageButton
                     android:id="@+id/btnAdd"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:background="@android:color/transparent"
                     android:contentDescription="Add"
                     android:layout_marginStart="120dp"
