@@ -30,7 +30,7 @@ class OfertaAdaptador(private var listaOfertas: List<Oferta>) :
     override fun onBindViewHolder(holder: OfertaViewHolder, position: Int) {
         val oferta = listaOfertas[position]
 
-        holder.textNombre.text = oferta.nombreOferta
+        holder.textNombre.text = "🎉 ${oferta.nombreOferta}"
         holder.textDescripcion.text = oferta.descripcionOferta
 
         val fecha = Date(oferta.fechaOferta)

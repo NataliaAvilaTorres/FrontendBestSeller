@@ -47,8 +47,9 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginBottom="8dp"
                 android:text="Ordenar por"
+                android:fontFamily="@font/urbanist_bold"
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"/>
 
             <!-- Contenedor de filtros -->
@@ -98,6 +99,8 @@
                     android:layout_marginStart="18dp"
                     android:backgroundTint="#2A5270"
                     android:text="Categoría"
+                    android:textSize="12dp"
+                    android:fontFamily="@font/urbanist_bold"
                     android:textColor="@android:color/white" />
             </LinearLayout>
 
@@ -108,9 +111,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginBottom="8dp"
+                android:fontFamily="@font/urbanist_bold"
                 android:text="Coincidencias"
                 android:textColor="@color/black"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <!-- Lista de productos -->

@@ -20,13 +20,14 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/white"
             android:padding="12dp">
 
             <ImageView
                 android:id="@+id/profileImage"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@drawable/perfil_imagen"
+                android:src="@drawable/perfil"
                 android:scaleType="centerCrop"
                 android:background="@drawable/circle_shape"
                 android:clipToOutline="true"
@@ -38,20 +39,22 @@
                 android:id="@+id/userName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Juan Pérez"
-                android:textStyle="bold"
+                android:layout_marginStart="4dp"
+                android:text="María Camila"
+                android:textColor="@color/black"
+                android:fontFamily="@font/urbanist_semibold"
                 android:textSize="16sp"
-                app:layout_constraintStart_toEndOf="@id/profileImage"
-                app:layout_constraintTop_toTopOf="@id/profileImage"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@id/profileImage"
-                app:layout_constraintHorizontal_bias="0.0" />
-
+                app:layout_constraintStart_toEndOf="@id/profileImage"
+                app:layout_constraintTop_toTopOf="@id/profileImage" />
 
             <TextView
                 android:id="@+id/fechaOferta"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="27 Ago 2025"
+                android:fontFamily="@font/urbanist_regular"
                 android:textSize="12sp"
                 android:textColor="@android:color/darker_gray"
                 app:layout_constraintTop_toTopOf="@id/userName"
@@ -72,6 +75,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/oferta"
+                android:textColor="@color/black"
+                android:fontFamily="@font/urbanist_bold"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="@id/imagenOferta"
@@ -83,6 +88,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/desc_oferta"
+                android:textColor="@color/black"
+                android:fontFamily="@font/urbanist_regular"
                 app:layout_constraintTop_toBottomOf="@id/nombreOferta"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/imagenOferta" />
@@ -96,6 +103,7 @@
                 android:padding="8dp"
                 android:drawablePadding="8dp"
                 android:drawableStart="@drawable/location"
+                android:fontFamily="@font/urbanist_bold"
                 android:text="@string/ver_ubicacion"
                 android:textColor="@android:color/black"
                 android:textSize="14sp"

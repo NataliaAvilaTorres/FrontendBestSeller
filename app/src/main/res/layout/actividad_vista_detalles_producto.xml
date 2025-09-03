@@ -21,8 +21,7 @@
             android:id="@+id/btnRegresar"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/ic_atras"
-            android:contentDescription="regresar" />
+            android:src="@drawable/ic_atras"/>
 
         <!-- Contenedor de los textos -->
         <LinearLayout
@@ -36,6 +35,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nombre producto"
+                android:fontFamily="@font/urbanist_bold"
                 android:textColor="@android:color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -45,8 +45,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Categoría"
+                android:textColorHint="@color/black"
+                android:fontFamily="@font/urbanist_regular"
                 android:textColor="@android:color/darker_gray"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
@@ -90,6 +92,7 @@
             android:layout_height="wrap_content"
             android:minHeight="50dp"
             android:gravity="center"
+            android:fontFamily="@font/urbanist_extrabold"
             android:background="@drawable/fondo_precio_redondo"
             android:paddingHorizontal="24dp"
             android:paddingVertical="8dp"
@@ -106,6 +109,7 @@
             android:layout_height="wrap_content"
             android:minHeight="50dp"
             android:gravity="center"
+            android:fontFamily="@font/urbanist_extrabold"
             android:background="@drawable/fondo_precio_redondo"
             android:paddingHorizontal="24dp"
             android:paddingVertical="8dp"
@@ -121,7 +125,9 @@
         android:id="@+id/tituloSimilares"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Publicaciones con productos similares"
+        android:text="🛍️ Publicaciones con productos similares"
+        android:textColor="@color/black"
+        android:fontFamily="@font/urbanist_bold"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginTop="32dp"

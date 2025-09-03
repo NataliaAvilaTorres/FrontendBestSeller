@@ -1,11 +1,11 @@
 package com.example.bestsellerfrontend
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
@@ -39,18 +39,24 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
             .load(producto.urlImagen)
             .into(holder.imageProducto)
 
-        // Agregar evento clic en todo el item
+        // Evento clic en todo el item
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
-            val intent = Intent(context, Actividad_vista_detalles_producto::class.java)
+            if (context is AppCompatActivity) {
+                val fragment = DetalleProductoFragment()
+                fragment.arguments = android.os.Bundle().apply {
+                    putString("producto_nombre", producto.nombre)
+                    putString("producto_categoria", producto.categoria)
+                    putDouble("producto_precio", producto.precio)
+                    putString("producto_imagen", producto.urlImagen)
+                }
 
-            // Enviar datos del producto (puedes usar Parcelable o Serializable)
-            intent.putExtra("producto_nombre", producto.nombre)
-            intent.putExtra("producto_categoria", producto.categoria)
-            intent.putExtra("producto_precio", producto.precio)
-            intent.putExtra("producto_imagen", producto.urlImagen)
-
-            context.startActivity(intent)
+                // Reemplazar el fragmento actual por el detalle
+                context.supportFragmentManager.beginTransaction()
+                    .replace(R.id.contenedor, fragment) // tu FrameLayout en Actividad_Navegacion_Usuario
+                    .addToBackStack(null) // permite regresar con el botón de back
+                    .commit()
+            }
         }
     }
 

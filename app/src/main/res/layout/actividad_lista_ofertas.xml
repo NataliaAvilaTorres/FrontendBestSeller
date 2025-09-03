@@ -24,8 +24,7 @@
                     android:id="@+id/btnRegresar"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_atras"
-                    android:contentDescription="Regresar" />
+                    android:src="@drawable/ic_atras" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -33,32 +32,36 @@
                     android:layout_margin="16dp"
                     android:gravity="center_vertical"
                     android:orientation="vertical">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:text="@string/foro_ofertas"
+                        android:fontFamily="@font/urbanist_bold"
                         android:textColor="@android:color/black"
                         android:layout_marginStart="12dp"
                         android:textSize="18sp"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:text="@string/comunidad"
+                        android:fontFamily="@font/urbanist_semibold"
                         android:textColor="@android:color/darker_gray"
                         android:layout_marginStart="12dp"
-                        android:textSize="10sp"
+                        android:textSize="14sp"
                         android:textStyle="bold"/>
                 </LinearLayout>
 
                 <ImageButton
                     android:id="@+id/btnLike"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:background="@android:color/transparent"
                     android:contentDescription="Like"
                     android:layout_marginStart="120dp"
-                    android:src="@drawable/add"
+                    android:src="@drawable/ic_mas"
                     app:layout_constraintEnd_toEndOf="parent" />
 
 
@@ -71,8 +74,9 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginBottom="8dp"
                 android:text="Ordenar por"
+                android:fontFamily="@font/urbanist_bold"
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"/>
 
             <!-- Contenedor de filtros -->
@@ -133,8 +137,9 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginBottom="8dp"
                 android:text="Coincidencias"
+                android:fontFamily="@font/urbanist_bold"
                 android:textColor="@color/black"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <!-- Lista de productos -->

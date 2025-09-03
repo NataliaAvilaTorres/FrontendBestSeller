@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import android.widget.ImageView
 
 class ListaOfertasFragment : Fragment() {
 
@@ -28,20 +29,22 @@ class ListaOfertasFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_lista_ofertas, container, false)
 
-        // Configuración del RecyclerView
+        val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
+        btnRegresar.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+
         recyclerView = view.findViewById(R.id.recyclerViewOfertas)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = OfertaAdaptador(emptyList())
         recyclerView.adapter = adapter
 
-        // Retrofit
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/") // Cambia según tu backend
+            .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // Cargar ofertas desde API
         lifecycleScope.launch {
             try {
                 ofertas = apiService.listarOfertas()
@@ -51,7 +54,6 @@ class ListaOfertasFragment : Fragment() {
             }
         }
 
-        // Configuración de Spinners
         val spinnerOrdenAZ = view.findViewById<android.widget.Spinner>(R.id.spinnerOrdenAZ)
         val opcionesAZ = listOf("A-Z", "Z-A")
         val adapterAZ = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesAZ)
