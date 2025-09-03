@@ -1,5 +1,6 @@
 package com.example.bestsellerfrontend
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,12 @@ class ListaOfertasFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.actividad_lista_ofertas, container, false)
+
+        val btnAdd = view.findViewById<android.widget.ImageButton>(R.id.btnAdd)
+        btnAdd.setOnClickListener {
+            val intent = Intent(requireContext(), Actividad_Formulario_NuevaOferta::class.java)
+            startActivity(intent)
+        }
 
         // Configuración del RecyclerView
         recyclerView = view.findViewById(R.id.recyclerViewOfertas)
