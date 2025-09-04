@@ -18,4 +18,9 @@ public interface ApiService {
 
     @GET("api/ofertas/listar")
     suspend fun listarOfertas(): List<Oferta>
+
+
+    @POST("api/ofertas/crear")
+    suspend fun crearOferta(@Body oferta: Oferta): Respuesta
+
 }

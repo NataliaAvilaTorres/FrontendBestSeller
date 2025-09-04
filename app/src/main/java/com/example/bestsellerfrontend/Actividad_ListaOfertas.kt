@@ -39,9 +39,13 @@ class ListaOfertasFragment : Fragment() {
 
         val btnAdd = view.findViewById<android.widget.ImageButton>(R.id.btnAdd)
         btnAdd.setOnClickListener {
-            val intent = Intent(requireContext(), Actividad_Formulario_NuevaOferta::class.java)
-            startActivity(intent)
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.contenedor, FormularioNuevaOfertaFragment()) // Cambia este fragment
+                .addToBackStack(null) // Esto te permite navegar hacia atrás
+                .commit()
         }
+
+
 
         // Configuración del RecyclerView
 
