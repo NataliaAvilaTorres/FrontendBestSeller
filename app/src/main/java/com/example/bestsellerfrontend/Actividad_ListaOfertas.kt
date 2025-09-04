@@ -86,8 +86,8 @@ class ListaOfertasFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {
                 if (ofertas.isNotEmpty()) {
                     val listaOrdenada = when (position) {
-                        0 -> ofertas.sortedBy { it.producto.nombre }
-                        1 -> ofertas.sortedByDescending { it.producto.nombre }
+                        0 -> ofertas.sortedBy { it.nombreOferta }
+                        1 -> ofertas.sortedByDescending { it.nombreOferta }
                         else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)
