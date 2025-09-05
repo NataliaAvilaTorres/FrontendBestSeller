@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,27 +22,48 @@ class ListaProductosFragment : Fragment() {
     private lateinit var apiService: ApiService
     private var productos: List<Producto> = emptyList()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.actividad_lista_productos, container, false)
 
-        // Configuración del RecyclerView
+        val btnCategoria = view.findViewById<Button>(R.id.btnCategoria)
+        btnCategoria.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.contenedor, VistaCategoriasFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         recyclerView = view.findViewById(R.id.recyclerViewProductos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = ProductoAdaptador(emptyList())
         recyclerView.adapter = adapter
 
-        // Retrofit
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // Cargar productos desde API
+        val categoriaFiltro = arguments?.getString("categoria_filtro")
+
         lifecycleScope.launch {
             try {
                 productos = apiService.listarProductos()
-                adapter.actualizarLista(productos)
+
+                val listaFiltrada = if (categoriaFiltro != null) {
+                    productos.filter { it.categoria.equals(categoriaFiltro, ignoreCase = true) }
+                } else {
+                    productos
+                }
+
+                adapter.actualizarLista(listaFiltrada)
+
+                productos = listaFiltrada
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -91,6 +113,7 @@ class ListaProductosFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
+
         return view
     }
 }

@@ -40,14 +40,10 @@ class ListaOfertasFragment : Fragment() {
         val btnAdd = view.findViewById<android.widget.ImageButton>(R.id.btnAdd)
         btnAdd.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.contenedor, FormularioNuevaOfertaFragment()) // Cambia este fragment
-                .addToBackStack(null) // Esto te permite navegar hacia atrás
+                .replace(R.id.contenedor, FormularioNuevaOfertaFragment())
+                .addToBackStack(null)
                 .commit()
         }
-
-
-
-        // Configuración del RecyclerView
 
         recyclerView = view.findViewById(R.id.recyclerViewOfertas)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())

@@ -39,7 +39,6 @@ class Actividad_Registro : AppCompatActivity() {
             finish()
         }
 
-        // Configuración Retrofit
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -57,7 +56,6 @@ class Actividad_Registro : AppCompatActivity() {
         ciudadSpinner.adapter = adapter
         ciudadSpinner.setSelection(0)
 
-        // Campos de entrada
         val nombreEditarTexto = findViewById<TextInputEditText>(R.id.nombreEditarTexto)
         val correoEditarTexto = findViewById<TextInputEditText>(R.id.correoEditarTexto)
         val contrasenaEditarTexto = findViewById<TextInputEditText>(R.id.contrasenaEditarTexto)

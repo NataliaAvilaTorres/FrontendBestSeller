@@ -23,6 +23,8 @@
     <string name="escanear">Escanear</string>
     <string name="no_tienes_una_cuenta">¿No tienes una cuenta?</string>
     <string name="registrate">Registrate</string>
+    <string name="Categorias">Categorias</string>
+    <string name="Productos">Productos</string>
 
     <string-array name="ciudades_array">
         <item>Selecciona tu ciudad</item>

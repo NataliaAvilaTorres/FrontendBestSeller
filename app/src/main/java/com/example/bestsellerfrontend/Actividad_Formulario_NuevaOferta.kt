@@ -37,12 +37,11 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
         // Retrofit
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/") // HTTPS en prod
+            .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // Referencias del layout (¡usa view.findViewById!)
         val etNombreOferta = view.findViewById<TextInputEditText>(R.id.etNombreOferta)
         val etDescripcion  = view.findViewById<TextInputEditText>(R.id.etDescripcion)
         val etTienda       = view.findViewById<TextInputEditText>(R.id.etTienda)
@@ -57,7 +56,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
         val btnGuardar = view.findViewById<Button>(R.id.btnGuardarOferta)
 
-        // Selector de fecha (usa requireContext() en fragment)
+
         etFecha.setOnClickListener {
             val y = cal.get(Calendar.YEAR)
             val m = cal.get(Calendar.MONTH)
@@ -122,17 +121,11 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
             btnGuardar.isEnabled = false
 
-            // En Fragment usa viewLifecycleOwner.lifecycleScope
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     val respuesta = apiService.crearOferta(oferta)
                     Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
-
-                    // Si quieres “volver” después de guardar:
-                    // a) con back dispatcher:
                     requireActivity().onBackPressedDispatcher.onBackPressed()
-                    // b) si usas Navigation Component:
-                    // findNavController().popBackStack()
 
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()

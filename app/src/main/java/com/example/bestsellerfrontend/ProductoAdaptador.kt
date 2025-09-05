@@ -12,7 +12,6 @@ import com.bumptech.glide.Glide
 class ProductoAdaptador(private var listaProductos: List<Producto>) :
     RecyclerView.Adapter<ProductoAdaptador.ProductoViewHolder>() {
 
-    // ViewHolder: representa un item
     class ProductoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageProducto: ImageView = itemView.findViewById(R.id.imagenProducto)
         val textNombre: TextView = itemView.findViewById(R.id.nombreProduct)
@@ -29,17 +28,17 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
     override fun onBindViewHolder(holder: ProductoViewHolder, position: Int) {
         val producto = listaProductos[position]
 
-        // Asignar datos al layout
+
         holder.textNombre.text = producto.nombre
         holder.textCategoria.text = producto.categoria
         holder.textPrecio.text = "$${producto.precio}"
 
-        // Cargar imagen con Glide
+
         Glide.with(holder.itemView.context)
             .load(producto.urlImagen)
             .into(holder.imageProducto)
 
-        // Evento clic en todo el item
+
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
             if (context is AppCompatActivity) {
@@ -51,10 +50,9 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
                     putString("producto_imagen", producto.urlImagen)
                 }
 
-                // Reemplazar el fragmento actual por el detalle
                 context.supportFragmentManager.beginTransaction()
-                    .replace(R.id.contenedor, fragment) // tu FrameLayout en Actividad_Navegacion_Usuario
-                    .addToBackStack(null) // permite regresar con el botón de back
+                    .replace(R.id.contenedor, fragment)
+                    .addToBackStack(null)
                     .commit()
             }
         }
@@ -62,7 +60,6 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
 
     override fun getItemCount(): Int = listaProductos.size
 
-    // Metodo para actualizar lista
     fun actualizarLista(nuevaLista: List<Producto>) {
         listaProductos = nuevaLista
         notifyDataSetChanged()
