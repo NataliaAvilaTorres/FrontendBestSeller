@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="80dp"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_margin="8dp"
+    android:background="@drawable/fondo_categoria"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/iconoCategoria"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/enlatados"/>
+
+    <TextView
+        android:id="@+id/nombreCategoria"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Categoría"
+        android:textSize="9sp"
+        android:fontFamily="@font/urbanist_semibold"
+        android:textColor="@color/black" />
+
+</LinearLayout>

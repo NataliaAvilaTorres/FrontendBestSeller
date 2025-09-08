@@ -25,6 +25,10 @@
     <string name="registrate">Registrate</string>
     <string name="Categorias">Categorias</string>
     <string name="Productos">Productos</string>
+    <string name="hola_camila_buen_dia">Hola Camila, Buen dia!</string>
+    <string name="inicio_usuario">Inicio</string>
+    <string name="publicaciones_del_d_a">🔥 Publicaciones del día</string>
+    <string name="categorias_de_productos">🛍️ Categorias de productos</string>
 
     <string-array name="ciudades_array">
         <item>Selecciona tu ciudad</item>

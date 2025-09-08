@@ -13,7 +13,7 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
         bottomNav.setOnItemSelectedListener { menuItem ->
-            when(menuItem.itemId) {
+            when (menuItem.itemId) {
                 R.id.buscar -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.contenedor, ListaProductosFragment())
@@ -34,6 +34,13 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
                 }
                 else -> false
             }
+        }
+
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.contenedor, InicioUsuarioFragment())
+                .commit()
+            bottomNav.selectedItemId = R.id.inicio
         }
     }
 }
