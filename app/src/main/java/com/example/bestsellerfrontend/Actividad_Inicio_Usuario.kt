@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,6 +27,7 @@ class InicioUsuarioFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
+
     ): View? {
 
         val view = inflater.inflate(R.layout.actividad_inicio_usuario, container, false)
@@ -69,6 +71,16 @@ class InicioUsuarioFragment : Fragment() {
         adapterCategorias = CategoriaAdaptador(categorias)
         recyclerViewCategorias.adapter = adapterCategorias
 
+        val btnAdd: ImageButton = view.findViewById(R.id.btnAdd)
+        btnAdd.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.contenedor, NotificacionesFragment()) // 👈 abre el fragmento
+                .addToBackStack(null) // permite volver atrás
+                .commit()
+        }
         return view
+
+
+
     }
 }

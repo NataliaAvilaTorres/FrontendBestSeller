@@ -43,4 +43,6 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
             bottomNav.selectedItemId = R.id.inicio
         }
     }
+
+
 }
