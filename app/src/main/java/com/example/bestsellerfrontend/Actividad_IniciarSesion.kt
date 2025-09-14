@@ -1,7 +1,9 @@
 package com.example.bestsellerfrontend
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -9,9 +11,6 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import android.content.Intent
-import android.widget.TextView
-
 
 class Actividad_IniciarSesion : AppCompatActivity() {
 
@@ -23,8 +22,7 @@ class Actividad_IniciarSesion : AppCompatActivity() {
 
         // Retrofit
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.195.48.116:8090/")
-            .baseUrl("http://10.0.2.2:8090/")
+            .baseUrl("http://10.0.2.2:8090/") // tu backend local
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
@@ -55,7 +53,17 @@ class Actividad_IniciarSesion : AppCompatActivity() {
                     val respuesta = apiService.login(usuario)
                     Toast.makeText(this@Actividad_IniciarSesion, respuesta.mensaje, Toast.LENGTH_SHORT).show()
 
-                    if (respuesta.mensaje == "Login exitoso") {
+                    if (respuesta.mensaje == "Login exitoso" && respuesta.usuario != null) {
+
+                        val prefs = getSharedPreferences("usuarioPrefs", MODE_PRIVATE)
+                        val editor = prefs.edit()
+                        editor.putString("id", respuesta.usuario.id)
+                        editor.putString("nombre", respuesta.usuario.nombre)
+                        editor.putString("correo", respuesta.usuario.correo)
+                        editor.putString("ciudad", respuesta.usuario.ciudad)
+                        editor.putString("contrasena", respuesta.usuario.contrasena)
+                        editor.apply()
+
                         val intent = Intent(this@Actividad_IniciarSesion, Actividad_Navegacion_Usuario::class.java)
                         startActivity(intent)
                         finish()

@@ -5,6 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,25 +27,42 @@ class InicioUsuarioFragment : Fragment() {
     private lateinit var recyclerViewCategorias: RecyclerView
     private lateinit var adapterCategorias: CategoriaAdaptador
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+    private lateinit var progressScroll: ProgressBar
 
-    ): View? {
-
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.actividad_inicio_usuario, container, false)
+
+        val txtSaludo: TextView = view.findViewById(R.id.txtSaludo)
+
+        val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+        val nombreUsuario = prefs.getString("nombre", "Usuario")
+
+
+        txtSaludo.text = "Hola $nombreUsuario, Buen día!"
 
         // --- RecyclerView de Ofertas ---
         recyclerViewOfertas = view.findViewById(R.id.recyclerViewOfertas)
-        recyclerViewOfertas.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewOfertas.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         adapterOfertas = OfertaAdaptador(emptyList())
         recyclerViewOfertas.adapter = adapterOfertas
 
+        progressScroll = view.findViewById(R.id.progressScroll)
+
+        recyclerViewOfertas.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val extent = recyclerView.computeHorizontalScrollExtent()
+                val range = recyclerView.computeHorizontalScrollRange()
+                val offset = recyclerView.computeHorizontalScrollOffset()
+
+                if (range - extent > 0) {
+                    val progress = (100f * offset / (range - extent)).toInt()
+                    progressScroll.progress = progress
+                }
+            }
+        })
+
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.195.48.116:8090/") // tu red local
-            .baseUrl("http://10.0.2.2:8090/") // para emulador
+            .baseUrl("http://10.0.2.2:8090/") // emulador
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
@@ -56,8 +77,7 @@ class InicioUsuarioFragment : Fragment() {
         }
 
         recyclerViewCategorias = view.findViewById(R.id.recyclerViewCategorias)
-        recyclerViewCategorias.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewCategorias.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
         val categorias: List<Pair<Int, String>> = listOf(
             Pair(R.drawable.bebida, "Bebidas"),
@@ -71,16 +91,22 @@ class InicioUsuarioFragment : Fragment() {
         adapterCategorias = CategoriaAdaptador(categorias)
         recyclerViewCategorias.adapter = adapterCategorias
 
+        // --- Botones ---
         val btnAdd: ImageButton = view.findViewById(R.id.btnAdd)
         btnAdd.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.contenedor, NotificacionesFragment()) // 👈 abre el fragmento
-                .addToBackStack(null) // permite volver atrás
+                .replace(R.id.contenedor, NotificacionesFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        val btnPerfil: ImageView = view.findViewById(R.id.btnPerfil)
+        btnPerfil.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.contenedor, Actividad_Perfil_Usuario())
+                .addToBackStack(null)
                 .commit()
         }
         return view
-
-
-
     }
 }

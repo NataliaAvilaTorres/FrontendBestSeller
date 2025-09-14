@@ -1,14 +1,16 @@
 package com.example.bestsellerfrontend
 
-import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
+import retrofit2.http.PUT
+import retrofit2.http.Path
+
 
 public interface ApiService {
 
     @POST("api/usuarios/registrar")
-    suspend fun registrarUsuario(@Body usuario: Usuario)
+    suspend fun registrarUsuario(@Body usuario: Usuario): Respuesta
 
     @POST("api/usuarios/login")
     suspend fun login(@Body usuario: Usuario): Respuesta
@@ -19,8 +21,10 @@ public interface ApiService {
     @GET("api/ofertas/listar")
     suspend fun listarOfertas(): List<Oferta>
 
-
     @POST("api/ofertas/crear")
     suspend fun crearOferta(@Body oferta: Oferta): Respuesta
+
+    @PUT("api/usuarios/actualizar/{id}")
+    suspend fun actualizarUsuario(@Path("id") id: String, @Body usuario: Usuario): Respuesta
 
 }

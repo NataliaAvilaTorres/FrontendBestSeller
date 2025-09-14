@@ -36,7 +36,6 @@ class ListaOfertasFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-
         val btnAdd = view.findViewById<android.widget.ImageButton>(R.id.btnAdd)
         btnAdd.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -51,8 +50,8 @@ class ListaOfertasFragment : Fragment() {
         recyclerView.adapter = adapter
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.195.48.116:8090/")
-            //.baseUrl("http://10.0.2.2:8090/")
+            //.baseUrl("http://10.195.48.116:8090/")
+            .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)

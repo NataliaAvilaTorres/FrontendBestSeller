@@ -77,17 +77,30 @@ class Actividad_Registro : AppCompatActivity() {
 
             lifecycleScope.launch {
                 try {
-                    apiService.registrarUsuario(usuario)
-                    Toast.makeText(this@Actividad_Registro, "Usuario guardado", Toast.LENGTH_SHORT).show()
+                    val respuesta = apiService.registrarUsuario(usuario)
+                    Toast.makeText(this@Actividad_Registro, respuesta.mensaje, Toast.LENGTH_SHORT).show()
 
+                    if (respuesta.usuario != null) {
+                        val prefs = getSharedPreferences("usuarioPrefs", MODE_PRIVATE)
+                        val editor = prefs.edit()
+                        editor.putString("id", respuesta.usuario.id ?: "")
+                        editor.putString("nombre", respuesta.usuario.nombre)
+                        editor.putString("correo", respuesta.usuario.correo)
+                        editor.putString("ciudad", respuesta.usuario.ciudad)
+                        editor.putString("contrasena", respuesta.usuario.contrasena)
+                        editor.apply()
+
+                        val intent = Intent(this@Actividad_Registro, Actividad_Navegacion_Usuario::class.java)
+                        intent.putExtra("usuarioNombre", respuesta.usuario.nombre)
+                        startActivity(intent)
+                        finish()
+                    }
+
+                    // Limpiar campos
                     nombreEditarTexto.text?.clear()
                     correoEditarTexto.text?.clear()
                     contrasenaEditarTexto.text?.clear()
                     ciudadSpinner.setSelection(0)
-
-                    val intent = Intent(this@Actividad_Registro, Actividad_Navegacion_Usuario::class.java)
-                    startActivity(intent)
-                    finish()
 
                 } catch (e: Exception) {
                     Toast.makeText(this@Actividad_Registro, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()

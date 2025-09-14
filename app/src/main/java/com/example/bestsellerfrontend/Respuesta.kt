@@ -1,5 +1,6 @@
 package com.example.bestsellerfrontend
 
 data class Respuesta(
-    val mensaje: String
+    val mensaje: String,
+    val usuario: Usuario?
 )

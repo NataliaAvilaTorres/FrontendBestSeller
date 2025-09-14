@@ -12,7 +12,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -36,11 +36,9 @@
                     android:layout_weight="1"
                     android:background="@drawable/barrabusqueda"
                     app:iconifiedByDefault="false"
-                    app:queryHint="¿Qué producto buscas?"
-                    />
+                    app:queryHint="¿Qué producto buscas?" />
             </LinearLayout>
 
-            <!-- Filtros -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -52,7 +50,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold"/>
 
-            <!-- Contenedor de filtros -->
             <LinearLayout
                 android:id="@+id/filtersLayout"
                 android:layout_width="match_parent"

@@ -5,4 +5,6 @@ data class Usuario(
     val correo: String,
     val ciudad: String,
     val contrasena: String,
+    val id: String? = null
 )
+

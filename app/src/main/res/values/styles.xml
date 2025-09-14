@@ -44,7 +44,6 @@
     </style>
 
     <style name="Theme.App" parent="Theme.Material3.DayNight.NoActionBar">
-        ...
         <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigationView</item>
     </style>
 
@@ -56,5 +55,6 @@
         <item name="colorSurface">@color/verde</item>
         <item name="colorOnSurfaceVariant">@color/black</item>
     </style>
+
 
 </resources>
