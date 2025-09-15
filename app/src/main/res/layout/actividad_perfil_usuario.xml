@@ -382,5 +382,28 @@
         app:layout_constraintTop_toBottomOf="@id/cardContrasena"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCerrarSesion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginHorizontal="75dp"
+            android:text="Cerrar sesión"
+            android:textAllCaps="false"
+            android:fontFamily="@font/urbanist_extrabold"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/gris_ic"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/cerrar_sesion"
+            app:iconSize="22dp"
+            app:iconTint="@android:color/white"
+            app:iconPadding="4dp"
+            app:iconGravity="textStart"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/btnEliminarCuenta"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

@@ -4,6 +4,7 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
 import retrofit2.http.PUT
+import retrofit2.http.DELETE
 import retrofit2.http.Path
 
 
@@ -26,5 +27,8 @@ public interface ApiService {
 
     @PUT("api/usuarios/actualizar/{id}")
     suspend fun actualizarUsuario(@Path("id") id: String, @Body usuario: Usuario): Respuesta
+
+    @DELETE("api/usuarios/eliminar/{id}")
+    suspend fun eliminarUsuario(@Path("id") id: String): Respuesta
 
 }
