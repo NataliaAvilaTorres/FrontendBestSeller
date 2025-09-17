@@ -46,8 +46,6 @@ class ListaOfertasFragment : Fragment() {
 
         recyclerView = view.findViewById(R.id.recyclerViewOfertas)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = OfertaAdaptador(emptyList())
-        recyclerView.adapter = adapter
 
         val retrofit = Retrofit.Builder()
             //.baseUrl("http://10.195.48.116:8090/")
@@ -55,6 +53,9 @@ class ListaOfertasFragment : Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
+
+        adapter = OfertaAdaptador(emptyList(), requireContext(), apiService)
+        recyclerView.adapter = adapter
 
         lifecycleScope.launch {
             try {
@@ -76,6 +77,12 @@ class ListaOfertasFragment : Fragment() {
         val adapterPrecio = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesPrecio)
         adapterPrecio.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerPrecio.adapter = adapterPrecio
+
+        val spinnerLikes = view.findViewById<android.widget.Spinner>(R.id.btnLikes)
+        val opcionesLikes = listOf("Menos a más likes", "Más a menos likes")
+        val adapterLikes = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesLikes)
+        adapterLikes.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerLikes.adapter = adapterLikes
 
         // Listener del Spinner A-Z
         spinnerOrdenAZ.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -100,6 +107,21 @@ class ListaOfertasFragment : Fragment() {
                     val listaOrdenada = when (position) {
                         0 -> ofertas.sortedBy { it.producto.precio }
                         1 -> ofertas.sortedByDescending { it.producto.precio }
+                        else -> ofertas
+                    }
+                    adapter.actualizarLista(listaOrdenada)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        spinnerLikes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {
+                if (ofertas.isNotEmpty()) {
+                    val listaOrdenada = when (position) {
+                        0 -> ofertas.sortedBy { it.likes }              // Menos a más
+                        1 -> ofertas.sortedByDescending { it.likes }   // Más a menos
                         else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)

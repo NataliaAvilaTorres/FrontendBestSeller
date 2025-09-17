@@ -43,8 +43,7 @@ class InicioUsuarioFragment : Fragment() {
         // --- RecyclerView de Ofertas ---
         recyclerViewOfertas = view.findViewById(R.id.recyclerViewOfertas)
         recyclerViewOfertas.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        adapterOfertas = OfertaAdaptador(emptyList())
-        recyclerViewOfertas.adapter = adapterOfertas
+
 
         progressScroll = view.findViewById(R.id.progressScroll)
 
@@ -66,6 +65,9 @@ class InicioUsuarioFragment : Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
+
+        adapterOfertas = OfertaAdaptador(emptyList(), requireContext(), apiService)
+        recyclerViewOfertas.adapter = adapterOfertas
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {

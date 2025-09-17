@@ -36,8 +36,6 @@ class Actividad_Ver_Publicaciones : Fragment() {
         // Configurar RecyclerView
         recyclerView = view.findViewById(R.id.recyclerMisPublicaciones)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = OfertaAdaptador(emptyList())
-        recyclerView.adapter = adapter
 
         // Configurar Retrofit
         val retrofit = Retrofit.Builder()
@@ -46,6 +44,9 @@ class Actividad_Ver_Publicaciones : Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
+
+        adapter = OfertaAdaptador(emptyList(), requireContext(), apiService)
+        recyclerView.adapter = adapter
 
         // Cargar publicaciones del usuario
         lifecycleScope.launch {

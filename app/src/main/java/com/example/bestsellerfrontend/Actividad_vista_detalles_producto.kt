@@ -37,8 +37,6 @@ class DetalleProductoFragment : Fragment() {
         recyclerViewSimilares = view.findViewById(R.id.recyclerSimilares)
         recyclerViewSimilares.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        adapter = OfertaAdaptador(emptyList())
-        recyclerViewSimilares.adapter = adapter
 
         // Recuperar los argumentos enviados desde el adaptador
         val nombre = arguments?.getString("producto_nombre")
@@ -65,6 +63,9 @@ class DetalleProductoFragment : Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
+
+        adapter = OfertaAdaptador(emptyList(), requireContext(), apiService)
+        recyclerViewSimilares.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {

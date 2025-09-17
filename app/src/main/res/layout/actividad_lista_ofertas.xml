@@ -115,16 +115,19 @@
                     android:layout_marginStart="30dp"
                     android:popupBackground="#2A5270" />
 
-                <!-- Botón Categoría -->
-                <Button
-                    android:id="@+id/btnCategoria"
-                    style="?attr/materialButtonOutlinedStyle"
+                <Spinner
+                    android:id="@+id/btnLikes"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="18dp"
+                    android:layout_height="40dp"
                     android:backgroundTint="#2A5270"
-                    android:text="Categoría"
-                    android:textColor="@android:color/white" />
+                    android:background="@drawable/fondo2"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:spinnerMode="dropdown"
+                    android:layout_marginStart="30dp"
+                    android:popupBackground="#2A5270" />
+
+
             </LinearLayout>
 
             <!-- Coincidencias -->

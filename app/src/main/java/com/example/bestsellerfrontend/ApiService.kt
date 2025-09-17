@@ -6,6 +6,7 @@ import retrofit2.http.GET
 import retrofit2.http.PUT
 import retrofit2.http.DELETE
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 public interface ApiService {
@@ -24,6 +25,12 @@ public interface ApiService {
 
     @POST("api/ofertas/crear")
     suspend fun crearOferta(@Body oferta: Oferta): Respuesta
+
+    @POST("api/ofertas/toggleLike")
+    suspend fun toggleLike(
+        @Query("id") id: String,
+        @Query("nuevoEstado") nuevoEstado: Boolean
+    ): Respuesta
 
     @PUT("api/usuarios/actualizar/{id}")
     suspend fun actualizarUsuario(@Path("id") id: String, @Body usuario: Usuario): Respuesta
