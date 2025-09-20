@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -14,6 +16,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BestSellerFrontend"
         android:usesCleartextTraffic="true">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAmk_pwGdekb606Okhp9tCKKw5o3XiG4Ic" />
+
         <activity
             android:name=".Actividad_IniciarSesion"
             android:exported="true">
@@ -24,6 +31,7 @@
         </activity>
         <activity android:name=".Actividad_Registro" />
         <activity android:name=".Actividad_Navegacion_Usuario" />
+        <activity android:name=".Actividad_Mapa" />
 
     </application>
 

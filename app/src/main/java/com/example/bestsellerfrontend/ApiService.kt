@@ -38,4 +38,12 @@ public interface ApiService {
     @DELETE("api/usuarios/eliminar/{id}")
     suspend fun eliminarUsuario(@Path("id") id: String): Respuesta
 
+    // 🔹 ENDPOINT DE GOOGLE PLACES (TIENDAS, SUPERMERCADOS CERCANOS)
+    @GET("maps/api/place/nearbysearch/json")
+    suspend fun buscarLugaresCercanos(
+        @Query("location") ubicacion: String,   // Ej: "4.60971,-74.08175"
+        @Query("radius") radio: Int,            // Ej: 2000 (metros)
+        @Query("type") tipo: String = "supermarket", // Tipo de lugar
+        @Query("key") apiKey: String            // Tu API Key de Google
+    ): RespuestaLugares
 }

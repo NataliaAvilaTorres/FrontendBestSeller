@@ -1,6 +1,7 @@
 package com.example.bestsellerfrontend
 
 import android.os.Bundle
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -30,6 +31,11 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.contenedor, ListaOfertasFragment())
                         .commit()
+                    true
+                }
+                R.id.ubicacion -> {
+                    val intent = Intent(this, Actividad_Mapa::class.java)
+                    startActivity(intent)
                     true
                 }
                 else -> false
