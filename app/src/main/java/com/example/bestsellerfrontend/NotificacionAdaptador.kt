@@ -25,13 +25,33 @@ class NotificacionAdaptador(private val lista: List<Notificacion>) :
 
     override fun onBindViewHolder(holder: NotificacionViewHolder, position: Int) {
         val notificacion = lista[position]
-        holder.txtUsuario.text = "${notificacion.usuario} hizo una publicación"
-        holder.txtMensaje.text = notificacion.mensaje
-        holder.txtTiempo.text = notificacion.tiempo
 
-        // Imagen estática por ahora (puedes cambiarla a dinámico si quieres)
+        // 👇 mostramos quién publicó
+        holder.txtUsuario.text = "${notificacion.usuario} publicó una oferta"
+        holder.txtMensaje.text = notificacion.mensaje
+        holder.txtTiempo.text = tiempoRelativo(notificacion.timestamp)
+
+        // Imagen estática por ahora
         holder.imgUsuario.setImageResource(R.drawable.ic_persona)
     }
 
     override fun getItemCount(): Int = lista.size
+
+    // 👇 función para formatear el tiempo
+    private fun tiempoRelativo(timestamp: Long?): String {
+        if (timestamp == null) return ""
+        val diff = System.currentTimeMillis() - timestamp
+
+        val segundos = diff / 1000
+        val minutos = segundos / 60
+        val horas = minutos / 60
+        val dias = horas / 24
+
+        return when {
+            segundos < 60 -> "Hace ${segundos}s"
+            minutos < 60 -> "Hace ${minutos}m"
+            horas < 24 -> "Hace ${horas}h"
+            else -> "Hace ${dias}d"
+        }
+    }
 }

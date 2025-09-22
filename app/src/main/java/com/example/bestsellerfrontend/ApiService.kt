@@ -46,4 +46,7 @@ public interface ApiService {
         @Query("type") tipo: String = "supermarket", // Tipo de lugar
         @Query("key") apiKey: String            // Tu API Key de Google
     ): RespuestaLugares
+
+    @GET("/api/notificaciones/listar")
+    suspend fun listarNotificaciones(): List<Notificacion>
 }

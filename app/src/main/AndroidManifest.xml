@@ -2,11 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permisos necesarios -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
 
     <application
+        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,10 +21,13 @@
         android:theme="@style/Theme.BestSellerFrontend"
         android:usesCleartextTraffic="true">
 
+
+    <!-- Clave de Google Maps -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAmk_pwGdekb606Okhp9tCKKw5o3XiG4Ic" />
 
+        <!-- Actividades -->
         <activity
             android:name=".Actividad_IniciarSesion"
             android:exported="true">
@@ -29,9 +36,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".Actividad_Registro" />
         <activity android:name=".Actividad_Navegacion_Usuario" />
         <activity android:name=".Actividad_Mapa" />
+
 
     </application>
 
