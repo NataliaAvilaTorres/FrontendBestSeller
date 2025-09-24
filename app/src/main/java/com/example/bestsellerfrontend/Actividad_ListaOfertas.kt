@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.widget.ImageView
+import com.google.android.material.button.MaterialButton
+
 
 class ListaOfertasFragment : Fragment() {
 
@@ -54,7 +56,7 @@ class ListaOfertasFragment : Fragment() {
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        adapter = OfertaAdaptador(emptyList(), requireContext(), apiService)
+        adapter = OfertaAdaptador(emptyList(), requireContext(), apiService,  mostrarBotones = false)
         recyclerView.adapter = adapter
 
         lifecycleScope.launch {
@@ -115,6 +117,15 @@ class ListaOfertasFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
+
+        val btnMisOfertas = view.findViewById<MaterialButton>(R.id.btnMisOfertas)
+        btnMisOfertas.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.contenedor, MisOfertas())
+                .addToBackStack(null)
+                .commit()
+        }
+
 
         spinnerLikes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {

@@ -20,17 +20,40 @@ public interface ApiService {
     @GET("api/productos/listar")
     suspend fun listarProductos(): List<Producto>
 
+    @GET("/api/productos/listar/{usuarioId}")
+    suspend fun listarProductosUsuario(@Path("usuarioId") usuarioId: String): List<Producto>
+
+
     @GET("api/ofertas/listar")
     suspend fun listarOfertas(): List<Oferta>
 
-    @POST("api/ofertas/crear")
-    suspend fun crearOferta(@Body oferta: Oferta): Respuesta
+    @GET("/api/ofertas/listar/{usuarioId}")
+    suspend fun listarOfertasUsuario(@Path("usuarioId") usuarioId: String): List<Oferta>
+
+    @POST("/api/ofertas/crear/{usuarioId}")
+    suspend fun crearOferta(
+        @Path("usuarioId") usuarioId: String,
+        @Body oferta: Oferta
+    ): Respuesta
+
 
     @POST("api/ofertas/toggleLike")
     suspend fun toggleLike(
         @Query("id") id: String,
         @Query("nuevoEstado") nuevoEstado: Boolean
     ): Respuesta
+
+    @PUT("api/ofertas/actualizar/{id}")
+    suspend fun actualizarOferta(
+        @Path("id") id: String,
+        @Body oferta: Oferta
+    ): Respuesta
+
+    @DELETE("api/ofertas/eliminar/{id}")
+    suspend fun eliminarOferta(
+        @Path("id") id: String
+    ): Respuesta
+
 
     @PUT("api/usuarios/actualizar/{id}")
     suspend fun actualizarUsuario(@Path("id") id: String, @Body usuario: Usuario): Respuesta

@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -68,7 +68,27 @@ class FormularioNuevaOfertaFragment : Fragment() {
             }, y, m, d).show()
         }
 
-        // ✅ Guardar oferta
+        // ⚡ Revisar si llegó una oferta (modo editar)
+        val ofertaExistente = arguments?.getSerializable("oferta") as? Oferta
+        if (ofertaExistente != null) {
+            // Rellenar campos
+            etNombreOferta.setText(ofertaExistente.nombreOferta)
+            etDescripcion.setText(ofertaExistente.descripcionOferta)
+            etTienda.setText(ofertaExistente.tiendaNombre)
+            etFecha.setText(dateFormat.format(ofertaExistente.fechaOferta))
+            etUrlImagenOferta.setText(ofertaExistente.urlImagen)
+
+            etProdNombre.setText(ofertaExistente.producto.nombre)
+            etProdMarca.setText(ofertaExistente.producto.marca)
+            etProdCategoria.setText(ofertaExistente.producto.categoria)
+            etProdPrecio.setText(ofertaExistente.producto.precio.toString())
+            etProdUrlImagen.setText(ofertaExistente.producto.urlImagen)
+
+            // Cambiar texto del botón
+            btnGuardar.text = "Actualizar Oferta"
+        }
+
+        // ✅ Guardar / Actualizar
         btnGuardar.setOnClickListener {
             val nombreOferta = etNombreOferta.text?.toString()?.trim().orEmpty()
             val descripcion = etDescripcion.text?.toString()?.trim().orEmpty()
@@ -103,6 +123,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
                 cal.timeInMillis
             }
 
+            // 📦 Construir producto y oferta
             val producto = Producto(
                 categoria = prodCategoria,
                 marca = prodMarca,
@@ -111,40 +132,38 @@ class FormularioNuevaOfertaFragment : Fragment() {
                 urlImagen = prodUrlImagen
             )
 
-            val oferta = Oferta(
+            val nuevaOferta = Oferta(
+                id = ofertaExistente?.id ?: "", // 👈 conservar el id si es edición
                 nombreOferta = nombreOferta,
                 descripcionOferta = descripcion,
-                fechaOferta = fechaMillis,
                 tiendaNombre = tienda,
-                urlImagen = urlImgOferta,
-                producto = producto
+                fechaOferta = fechaMillis,
+                producto = producto,
+                urlImagen = urlImgOferta
             )
+
+            // 🔑 Obtener id del usuario logueado
+            val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+            val usuarioId = prefs.getString("id", null)
+
+            if (usuarioId == null) {
+                Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             btnGuardar.isEnabled = false
 
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    // 1️⃣ Guardar en backend
-                    val respuesta = apiService.crearOferta(oferta)
-                    Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
-
-                    // 2️⃣ Guardar en Firebase
-                    val database = FirebaseDatabase.getInstance()
-                    val ofertasRef = database.getReference("ofertas")
-                    val notificacionesRef = database.getReference("notificaciones")
-
-                    val idOferta = ofertasRef.push().key!! // ID único
-                    ofertasRef.child(idOferta).setValue(oferta)
-
-                    val idNotificacion = notificacionesRef.push().key!! // ID único
-                    val notificacion = mapOf(
-                        "id" to idNotificacion,
-                        "idOferta" to idOferta,
-                        "usuario" to tienda, // 👈 aquí puedes usar el usuario logueado
-                        "mensaje" to nombreOferta,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    notificacionesRef.child(idNotificacion).setValue(notificacion)
+                    if (ofertaExistente != null) {
+                        // 🚀 Actualizar
+                        val respuesta = apiService.actualizarOferta(ofertaExistente.id, nuevaOferta)
+                        Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
+                    } else {
+                        // 🚀 Crear
+                        val respuesta = apiService.crearOferta(usuarioId, nuevaOferta)
+                        Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
+                    }
 
                     // Volver atrás
                     requireActivity().onBackPressedDispatcher.onBackPressed()

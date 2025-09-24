@@ -1,5 +1,6 @@
 package com.example.bestsellerfrontend
 
+import java.io.Serializable
 import java.util.Date
 
 data class Oferta(
@@ -11,5 +12,5 @@ data class Oferta(
     val producto: Producto,
     val urlImagen: String,
     var likes: Int = 0,
-    var likedByUser: Boolean = false)
+    var likedByUser: Boolean = false) : Serializable
 

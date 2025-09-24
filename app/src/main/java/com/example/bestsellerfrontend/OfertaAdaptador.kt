@@ -1,13 +1,19 @@
 package com.example.bestsellerfrontend
 
+import android.app.AlertDialog
 import android.content.Context
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +25,8 @@ import java.util.*
 class OfertaAdaptador(
     private var listaOfertas: List<Oferta>,
     private val context: Context,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val mostrarBotones: Boolean = false // 👈 por defecto no se muestran
 ) : RecyclerView.Adapter<OfertaAdaptador.OfertaViewHolder>() {
 
     class OfertaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -30,6 +37,8 @@ class OfertaAdaptador(
         val textUbicacion: TextView = itemView.findViewById(R.id.ubicacion)
         val btnLike: ImageButton = itemView.findViewById(R.id.btnLike)
         val tvLikeCount: TextView = itemView.findViewById(R.id.tvLikeCount)
+        val btnEditar: Button? = itemView.findViewById(R.id.btnEditar)
+        val btnEliminar: Button? = itemView.findViewById(R.id.btnEliminar)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OfertaViewHolder {
@@ -41,9 +50,9 @@ class OfertaAdaptador(
     override fun onBindViewHolder(holder: OfertaViewHolder, position: Int) {
         val oferta = listaOfertas[position]
 
-        // Mostrar nombre, descripción y fecha
         holder.textNombre.text = "🎉 ${oferta.nombreOferta}"
         holder.textDescripcion.text = oferta.descripcionOferta
+
         val fecha = Date(oferta.fechaOferta)
         val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         holder.textFecha.text = formato.format(fecha)
@@ -53,18 +62,16 @@ class OfertaAdaptador(
             .load(oferta.urlImagen)
             .into(holder.imagenOferta)
 
-        // Inicializar contador de likes (asegúrate de agregar estas propiedades en Oferta.kt)
+        // Likes
         if (oferta.likes == null) oferta.likes = 0
         if (oferta.likedByUser == null) oferta.likedByUser = false
         holder.tvLikeCount.text = oferta.likes.toString()
 
-        // Cambiar color del botón según el estado
         holder.btnLike.setColorFilter(
             if (oferta.likedByUser) ContextCompat.getColor(context, R.color.rojo)
             else ContextCompat.getColor(context, R.color.black)
         )
 
-        // Listener para toggle
         holder.btnLike.setOnClickListener {
             val nuevoEstado = !oferta.likedByUser
             oferta.likedByUser = nuevoEstado
@@ -79,15 +86,56 @@ class OfertaAdaptador(
 
             holder.tvLikeCount.text = oferta.likes.toString()
 
-            // Llamada al backend
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    // Asegúrate de que la oferta tenga su id de Firebase
                     apiService.toggleLike(oferta.id ?: "", nuevoEstado)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
+        }
+
+        //  Mostrar botones solo si está en modo MisOfertas
+        if (mostrarBotones) {
+            holder.btnEditar?.visibility = View.VISIBLE
+            holder.btnEliminar?.visibility = View.VISIBLE
+
+            // Editar
+            holder.btnEditar?.setOnClickListener {
+                val fragment = FormularioNuevaOfertaFragment().apply {
+                    arguments = Bundle().apply {
+                        putSerializable("oferta", oferta)
+                    }
+                }
+                (context as AppCompatActivity).supportFragmentManager.beginTransaction()
+                    .replace(R.id.contenedor, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+
+            // Eliminar
+            holder.btnEliminar?.setOnClickListener {
+                AlertDialog.Builder(context)
+                    .setTitle("Eliminar oferta")
+                    .setMessage("¿Seguro que quieres eliminar esta oferta?")
+                    .setPositiveButton("Sí") { _, _ ->
+                        (context as AppCompatActivity).lifecycleScope.launch {
+                            try {
+                                val respuesta = apiService.eliminarOferta(oferta.id)
+                                Toast.makeText(context, respuesta.mensaje, Toast.LENGTH_SHORT).show()
+                                listaOfertas = listaOfertas.filter { it.id != oferta.id }
+                                notifyDataSetChanged()
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                    .setNegativeButton("No", null)
+                    .show()
+            }
+        } else {
+            holder.btnEditar?.visibility = View.GONE
+            holder.btnEliminar?.visibility = View.GONE
         }
     }
 
