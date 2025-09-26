@@ -26,7 +26,7 @@ class OfertaAdaptador(
     private var listaOfertas: List<Oferta>,
     private val context: Context,
     private val apiService: ApiService,
-    private val mostrarBotones: Boolean = false // 👈 por defecto no se muestran
+    private val mostrarBotones: Boolean = false //  por defecto no se muestran
 ) : RecyclerView.Adapter<OfertaAdaptador.OfertaViewHolder>() {
 
     class OfertaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -57,10 +57,10 @@ class OfertaAdaptador(
         val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         holder.textFecha.text = formato.format(fecha)
 
-        // Imagen con Glide
         Glide.with(holder.itemView.context)
-            .load(oferta.urlImagen)
+            .load(oferta.producto.urlImagen)
             .into(holder.imagenOferta)
+
 
         // Likes
         if (oferta.likes == null) oferta.likes = 0

@@ -10,7 +10,5 @@ data class Oferta(
     val tiendaNombre: String,
     val fechaOferta: Long,
     val producto: Producto,
-    val urlImagen: String,
     var likes: Int = 0,
     var likedByUser: Boolean = false) : Serializable
-

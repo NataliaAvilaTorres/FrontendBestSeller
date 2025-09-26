@@ -88,7 +88,7 @@
                         android:id="@+id/tvNumeroPublicaciones"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="2"
+                        android:text="0"
                         android:textSize="100sp"
                         android:textStyle="bold"
                         android:textColor="#77B5A4"/>
@@ -124,7 +124,7 @@
                         android:id="@+id/tvLikesRecibidos"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="5"
+                        android:text="0"
                         android:textSize="100sp"
                         android:textStyle="bold"
                         android:textColor="#77B5A4"/>

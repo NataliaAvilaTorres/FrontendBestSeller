@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -18,12 +19,18 @@ class Actividad_IniciarSesion : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 🔹 Inicializar Firebase al inicio de la app (evita errores con Storage y Auth)
+        if (FirebaseApp.getApps(this).isEmpty()) {
+            FirebaseApp.initializeApp(this)
+        }
+
         setContentView(R.layout.actividad_iniciar_sesion)
 
         // Retrofit
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/") // tu backend local
-            //.baseUrl("http://192.168.0.7:8090/")
+            //.baseUrl("http://10.0.2.2:8090/") // backend local en emulador
+            .baseUrl("http://192.168.0.7:8090/") // tu backend real
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
@@ -52,10 +59,15 @@ class Actividad_IniciarSesion : AppCompatActivity() {
             lifecycleScope.launch {
                 try {
                     val respuesta = apiService.login(usuario)
-                    Toast.makeText(this@Actividad_IniciarSesion, respuesta.mensaje, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@Actividad_IniciarSesion,
+                        respuesta.mensaje,
+                        Toast.LENGTH_SHORT
+                    ).show()
 
                     if (respuesta.mensaje == "Login exitoso" && respuesta.usuario != null) {
 
+                        // Guardar datos del usuario en SharedPreferences
                         val prefs = getSharedPreferences("usuarioPrefs", MODE_PRIVATE)
                         val editor = prefs.edit()
                         editor.putString("id", respuesta.usuario.id)
@@ -65,13 +77,21 @@ class Actividad_IniciarSesion : AppCompatActivity() {
                         editor.putString("contrasena", respuesta.usuario.contrasena)
                         editor.apply()
 
-                        val intent = Intent(this@Actividad_IniciarSesion, Actividad_Navegacion_Usuario::class.java)
+                        // Navegar a la pantalla principal
+                        val intent = Intent(
+                            this@Actividad_IniciarSesion,
+                            Actividad_Navegacion_Usuario::class.java
+                        )
                         startActivity(intent)
                         finish()
                     }
 
                 } catch (e: Exception) {
-                    Toast.makeText(this@Actividad_IniciarSesion, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@Actividad_IniciarSesion,
+                        "Error: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }

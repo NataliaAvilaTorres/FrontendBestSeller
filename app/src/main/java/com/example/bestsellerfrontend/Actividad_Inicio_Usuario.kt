@@ -74,7 +74,8 @@ class InicioUsuarioFragment : Fragment() {
         })
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/") // emulador
+            //.baseUrl("http://10.0.2.2:8090/") // emulador
+            .baseUrl("http://192.168.0.7:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)

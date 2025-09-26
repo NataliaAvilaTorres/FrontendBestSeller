@@ -62,7 +62,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Campos de la oferta -->
+            <!-- Nombre oferta -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -84,6 +84,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Descripción -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -105,6 +106,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Tienda -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -150,28 +152,42 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
+            <!-- Imagen Oferta -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Imagen de la oferta"
+                android:layout_marginTop="16dp"
+                android:textStyle="bold"/>
+
+            <ImageView
+                android:id="@+id/imgPreviewOferta"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="8dp">
+                android:orientation="horizontal"
+                android:gravity="center">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
+                <Button
+                    android:id="@+id/btnSeleccionarImagen"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:text="Galería"/>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etUrlImagenOferta"
-                        android:hint="URL imagen oferta"
-                        android:fontFamily="@font/urbanist_semibold"
-                        android:textSize="16sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-                </com.google.android.material.textfield.TextInputLayout>
-            </com.google.android.material.card.MaterialCardView>
+                <Button
+                    android:id="@+id/btnTomarFoto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Cámara"/>
+            </LinearLayout>
 
-            <!-- Producto -->
+            <!-- Producto: todos los campos de texto intactos -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -250,27 +266,6 @@
                         android:id="@+id/etProdPrecio"
                         android:hint="Precio"
                         android:inputType="numberDecimal"
-                        android:fontFamily="@font/urbanist_semibold"
-                        android:textSize="16sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-                </com.google.android.material.textfield.TextInputLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="8dp">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etProdUrlImagen"
-                        android:hint="URL imagen producto"
                         android:fontFamily="@font/urbanist_semibold"
                         android:textSize="16sp"
                         android:layout_width="match_parent"
