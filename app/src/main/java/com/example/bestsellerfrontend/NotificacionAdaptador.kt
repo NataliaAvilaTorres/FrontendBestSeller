@@ -25,15 +25,12 @@ class NotificacionAdaptador(private val lista: List<Notificacion>) :
 
     override fun onBindViewHolder(holder: NotificacionViewHolder, position: Int) {
         val notificacion = lista[position]
-
-        // 👇 mostramos quién publicó
         holder.txtUsuario.text = "${notificacion.usuario} publicó una oferta"
         holder.txtMensaje.text = notificacion.mensaje
         holder.txtTiempo.text = tiempoRelativo(notificacion.timestamp)
-
-        // Imagen estática por ahora
-        holder.imgUsuario.setImageResource(R.drawable.ic_persona)
+        holder.imgUsuario.setImageResource(R.drawable.perfil)
     }
+
 
     override fun getItemCount(): Int = lista.size
 
@@ -54,4 +51,5 @@ class NotificacionAdaptador(private val lista: List<Notificacion>) :
             else -> "Hace ${dias}d"
         }
     }
+
 }

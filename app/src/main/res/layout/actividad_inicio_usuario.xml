@@ -23,14 +23,14 @@
 
             <ImageView
                 android:id="@+id/btnPerfil"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:src="@drawable/perfil" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="10dp"
                 android:gravity="center_vertical"
                 android:orientation="vertical">
 
@@ -60,19 +60,20 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="end"
-            android:layout_marginTop="-72dp"
+            android:layout_marginTop="-55dp"
             android:layout_marginEnd="22dp"
             android:background="@android:color/transparent"
             android:contentDescription="Add"
             android:src="@drawable/ic_notificacion" />
 
         <!-- Publicaciones -->
+
         <TextView
             android:id="@+id/txtPublicaciones"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="30dp"
             android:fontFamily="@font/urbanist_bold"
             android:text="@string/publicaciones_del_d_a"
             android:textColor="@color/black"
@@ -83,7 +84,7 @@
             android:id="@+id/recyclerViewOfertas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="0dp"
             android:clipToPadding="false"
             android:padding="8dp" />
 

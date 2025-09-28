@@ -11,8 +11,10 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -30,6 +32,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.UUID
+import android.widget.AutoCompleteTextView
+
 
 class FormularioNuevaOfertaFragment : Fragment() {
 
@@ -71,8 +75,27 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
         val etProdNombre = view.findViewById<TextInputEditText>(R.id.etProdNombre)
         val etProdMarca = view.findViewById<TextInputEditText>(R.id.etProdMarca)
-        val etProdCategoria = view.findViewById<TextInputEditText>(R.id.etProdCategoria)
         val etProdPrecio = view.findViewById<TextInputEditText>(R.id.etProdPrecio)
+
+        val actvCategoria = view.findViewById<AutoCompleteTextView>(R.id.actvCategoria)
+        val categorias = listOf(
+            "Granos y Cereales",
+            "Bebidas",
+            "Enlatados",
+            "Pastas y Harinas",
+            "Dulces",
+            "Instantáneos y Precocidos"
+        )
+        val adapterCategorias = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            categorias
+        )
+        actvCategoria.setAdapter(adapterCategorias)
+
+        actvCategoria.setOnClickListener {
+            actvCategoria.showDropDown()
+        }
 
         val btnGuardar = view.findViewById<Button>(R.id.btnGuardarOferta)
         val btnGaleria = view.findViewById<Button>(R.id.btnSeleccionarImagen)
@@ -97,6 +120,11 @@ class FormularioNuevaOfertaFragment : Fragment() {
             startActivityForResult(intent, GALLERY_REQUEST)
         }
 
+        val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
+        btnRegresar.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+
         // Cámara con verificación de permiso
         btnCamara.setOnClickListener {
             verificarPermisoCamara()
@@ -111,7 +139,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
             val prodNombre = etProdNombre.text?.toString()?.trim().orEmpty()
             val prodMarca = etProdMarca.text?.toString()?.trim().orEmpty()
-            val prodCategoria = etProdCategoria.text?.toString()?.trim().orEmpty()
+            val prodCategoria = actvCategoria.text?.toString()?.trim().orEmpty()
             val prodPrecioStr = etProdPrecio.text?.toString()?.trim().orEmpty()
 
             if (nombreOferta.isEmpty() || descripcion.isEmpty() || tienda.isEmpty() ||
@@ -154,6 +182,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
                         descripcionOferta = descripcion,
                         tiendaNombre = tienda,
                         fechaOferta = fechaMillis,
+                        urlImagen = downloadUri.toString(),
                         producto = producto
                     )
 

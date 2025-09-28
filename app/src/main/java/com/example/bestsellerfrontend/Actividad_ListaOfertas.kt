@@ -35,7 +35,7 @@ class ListaOfertasFragment : Fragment() {
 
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
         btnRegresar.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            parentFragmentManager.popBackStack()
         }
 
         val btnAdd = view.findViewById<android.widget.ImageButton>(R.id.btnAdd)
@@ -131,7 +131,6 @@ class ListaOfertasFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
-
         return view
     }
 }

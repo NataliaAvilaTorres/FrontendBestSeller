@@ -18,6 +18,7 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
                 R.id.buscar -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.contenedor, ListaProductosFragment())
+                        .addToBackStack(null)
                         .commit()
                     true
                 }
@@ -30,6 +31,7 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
                 R.id.oferta -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.contenedor, ListaOfertasFragment())
+                        .addToBackStack(null)
                         .commit()
                     true
                 }

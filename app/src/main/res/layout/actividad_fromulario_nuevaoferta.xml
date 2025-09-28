@@ -21,9 +21,14 @@
 
             <ImageView
                 android:id="@+id/btnRegresar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_atras" />
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_atras"
+                android:contentDescription="Regresar"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="8dp"
+                android:foreground="?attr/selectableItemBackgroundBorderless" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -237,19 +242,25 @@
                 app:cardCornerRadius="8dp">
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tlCategoria"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:hint="Categoría"
+                    android:padding="20dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etProdCategoria"
-                        android:hint="Categoría"
+                    <AutoCompleteTextView
+                        android:id="@+id/actvCategoria"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:inputType="none"
                         android:fontFamily="@font/urbanist_semibold"
                         android:textSize="16sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:completionThreshold="1"
+                        android:paddingStart="12dp"/>
+
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
+
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

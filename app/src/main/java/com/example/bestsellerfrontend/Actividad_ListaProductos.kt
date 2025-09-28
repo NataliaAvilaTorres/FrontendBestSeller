@@ -14,13 +14,14 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import android.widget.ImageView
 
 class ListaProductosFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ProductoAdaptador
     private lateinit var apiService: ApiService
-    private var productos: List<Producto> = emptyList()
+    private var ofertas: List<Oferta> = emptyList()  // lista de ofertas ahora
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,6 +30,13 @@ class ListaProductosFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_lista_productos, container, false)
 
+        // --- BOTÓN REGRESAR ---
+        val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
+        btnRegresar.setOnClickListener {
+            requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+
+        // --- BOTÓN CATEGORÍAS ---
         val btnCategoria = view.findViewById<Button>(R.id.btnCategoria)
         btnCategoria.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -37,81 +45,85 @@ class ListaProductosFragment : Fragment() {
                 .commit()
         }
 
+        // --- RECYCLER VIEW ---
         recyclerView = view.findViewById(R.id.recyclerViewProductos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ProductoAdaptador(emptyList())
+        adapter = ProductoAdaptador(emptyList())  // ahora recibe ofertas
         recyclerView.adapter = adapter
 
+        // --- RETROFIT ---
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/")
-            //.baseUrl("http://10.195.48.116:8090/")
+            .baseUrl("http://192.168.0.7:8090/") // tu backend real
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
         val categoriaFiltro = arguments?.getString("categoria_filtro")
 
+        // --- CARGA DE DATOS ---
         lifecycleScope.launch {
             try {
-                productos = apiService.listarProductos()
+                ofertas = apiService.listarOfertas()
 
                 val listaFiltrada = if (categoriaFiltro != null) {
-                    productos.filter { it.categoria.equals(categoriaFiltro, ignoreCase = true) }
+                    ofertas.filter { it.producto.categoria.equals(categoriaFiltro, ignoreCase = true) }
                 } else {
-                    productos
+                    ofertas
                 }
 
                 adapter.actualizarLista(listaFiltrada)
-
-                productos = listaFiltrada
+                ofertas = listaFiltrada
 
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
 
+        // =========================
         // Configuración de Spinners
+        // =========================
+
+        // Spinner A-Z
         val spinnerOrdenAZ = view.findViewById<android.widget.Spinner>(R.id.spinnerOrdenAZ)
         val opcionesAZ = listOf("A-Z", "Z-A")
-        val adapterAZ = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesAZ)
-        adapterAZ.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapterAZ = ArrayAdapter(requireContext(), R.layout.spinner_item, opcionesAZ)
+        adapterAZ.setDropDownViewResource(R.layout.spinner_dropdown_item)
         spinnerOrdenAZ.adapter = adapterAZ
 
+        // Spinner Precio
         val spinnerPrecio = view.findViewById<android.widget.Spinner>(R.id.spinnerPrecio)
         val opcionesPrecio = listOf("Menor a mayor", "Mayor a menor")
-        val adapterPrecio = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opcionesPrecio)
-        adapterPrecio.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val adapterPrecio = ArrayAdapter(requireContext(), R.layout.spinner_item, opcionesPrecio)
+        adapterPrecio.setDropDownViewResource(R.layout.spinner_dropdown_item)
         spinnerPrecio.adapter = adapterPrecio
 
         // Listener del Spinner A-Z
         spinnerOrdenAZ.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (productos.isNotEmpty()) {
+                if (ofertas.isNotEmpty()) {
                     val listaOrdenada = when (position) {
-                        0 -> productos.sortedBy { it.nombre }
-                        1 -> productos.sortedByDescending { it.nombre }
-                        else -> productos
+                        0 -> ofertas.sortedBy { it.producto.nombre }
+                        1 -> ofertas.sortedByDescending { it.producto.nombre }
+                        else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)
                 }
             }
-
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
         // Listener del Spinner Precio
         spinnerPrecio.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (productos.isNotEmpty()) {
+                if (ofertas.isNotEmpty()) {
                     val listaOrdenada = when (position) {
-                        0 -> productos.sortedBy { it.precio }
-                        1 -> productos.sortedByDescending { it.precio }
-                        else -> productos
+                        0 -> ofertas.sortedBy { it.producto.precio }
+                        1 -> ofertas.sortedByDescending { it.producto.precio }
+                        else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)
                 }
             }
-
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 

@@ -1,154 +1,160 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
-    android:orientation="vertical"
-    android:background="@color/white"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Actividad_Registro">
+    android:fillViewport="true"
+    android:background="@color/white">
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="16dp"/>
-
-    <!-- Atras -->
-    <ImageView
-        android:id="@+id/btn_atras"
-        android:layout_width="72dp"
-        android:layout_height="55dp"
-        android:src="@drawable/ic_atras"
-        tools:layout_editor_absoluteX="30dp"
-        tools:layout_editor_absoluteY="22dp" />
-    <!-- Logo Best Seller -->
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="wrap_content"
-        android:layout_height="200dp"
-        android:layout_marginTop="92dp"
-        android:src="@drawable/logo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.491"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Nombre usuario -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/nombreEntrada"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/nombre"
-        style="@style/TextInputStyle"
-        app:layout_constraintTop_toBottomOf="@id/logo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:textColorHint="@color/white"
-        android:layout_marginTop="20dp">
+        tools:context=".Actividad_Registro">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/nombreEditarTexto"
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Atras -->
+        <ImageView
+            android:id="@+id/btn_atras"
+            android:layout_width="72dp"
+            android:layout_height="55dp"
+            android:src="@drawable/ic_atras"
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="22dp" />
+
+        <!-- Logo Best Seller -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
+            android:layout_marginTop="92dp"
+            android:src="@drawable/logo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.491"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Nombre usuario -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nombreEntrada"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:fontFamily="@font/urbanist_semibold"
-            android:drawableStart="@drawable/ic_persona"
-            android:textCursorDrawable="@null"
-            android:drawablePadding="8dp"
-            android:background="@drawable/fondo1"
-            android:textColor="@color/white"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/nombre"
+            style="@style/TextInputStyle"
+            app:layout_constraintTop_toBottomOf="@id/logo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textColorHint="@color/white"
+            android:layout_marginTop="20dp">
 
-    <!-- Correo electronico -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/correoEntrada"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/correo"
-        style="@style/TextInputStyle"
-        app:layout_constraintTop_toBottomOf="@id/nombreEntrada"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:textColorHint="@color/white"
-        android:layout_marginTop="-18dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nombreEditarTexto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:fontFamily="@font/urbanist_semibold"
+                android:drawableStart="@drawable/ic_persona"
+                android:textCursorDrawable="@null"
+                android:drawablePadding="8dp"
+                android:background="@drawable/fondo1"
+                android:textColor="@color/white"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/correoEditarTexto"
-            android:layout_width="match_parent"
+        <!-- Correo electronico -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/correoEntrada"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"
-            android:fontFamily="@font/urbanist_semibold"
-            android:drawableStart="@drawable/ic_correo"
-            android:drawablePadding="8dp"
-            android:textCursorDrawable="@null"
-            android:background="@drawable/fondo1"
-            android:textColor="@color/white"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/correo"
+            style="@style/TextInputStyle"
+            app:layout_constraintTop_toBottomOf="@id/nombreEntrada"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textColorHint="@color/white"
+            android:layout_marginTop="-18dp">
 
-    <!-- Ciudad -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/ciudadEntrada"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/ciudad"
-        style="@style/TextInputStyle"
-        app:layout_constraintTop_toBottomOf="@id/correoEntrada"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="-18dp"
-        android:textColorHint="@color/white">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/correoEditarTexto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:fontFamily="@font/urbanist_semibold"
+                android:drawableStart="@drawable/ic_correo"
+                android:drawablePadding="8dp"
+                android:textCursorDrawable="@null"
+                android:background="@drawable/fondo1"
+                android:textColor="@color/white"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <Spinner
-            android:id="@+id/ciudadSpinner"
-            android:layout_width="match_parent"
+        <!-- Ciudad -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/ciudadEntrada"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/fondo1"
-            android:padding="15dp"
-            android:spinnerMode="dropdown"
-            />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/ciudad"
+            style="@style/TextInputStyle"
+            app:layout_constraintTop_toBottomOf="@id/correoEntrada"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="-18dp"
+            android:textColorHint="@color/white">
 
-    <!-- Contraseña -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/contrasenaEntrada"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/contrasena"
-        style="@style/TextInputStyle"
-        app:layout_constraintTop_toBottomOf="@id/ciudadEntrada"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:textColorHint="@color/white"
-        android:layout_marginTop="-18dp"
-        android:textColor="@color/white" >
+            <Spinner
+                android:id="@+id/ciudadSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/fondo1"
+                android:padding="15dp"
+                android:spinnerMode="dropdown"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/contrasenaEditarTexto"
-            android:layout_width="match_parent"
+        <!-- Contraseña -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/contrasenaEntrada"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:fontFamily="@font/urbanist_semibold"
-            android:drawableStart="@drawable/ic_contrasena"
-            android:drawablePadding="8dp"
-            android:textCursorDrawable="@null"
-            android:background="@drawable/fondo1"
-            android:textColor="@color/white"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/contrasena"
+            style="@style/TextInputStyle"
+            app:layout_constraintTop_toBottomOf="@id/ciudadEntrada"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textColorHint="@color/white"
+            android:layout_marginTop="-18dp"
+            android:textColor="@color/white" >
 
-    <!-- Botón registrar -->
-    <Button
-        android:id="@+id/registerButton"
-        style="@style/BtnRed"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:text="@string/registrar"
-        android:layout_marginTop="30dp"
-        android:fontFamily="@font/urbanist_extrabold"
-        app:layout_constraintTop_toBottomOf="@id/contrasenaEntrada"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/contrasenaEditarTexto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:fontFamily="@font/urbanist_semibold"
+                android:drawableStart="@drawable/ic_contrasena"
+                android:drawablePadding="8dp"
+                android:textCursorDrawable="@null"
+                android:background="@drawable/fondo1"
+                android:textColor="@color/white"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Botón registrar -->
+        <Button
+            android:id="@+id/registerButton"
+            style="@style/BtnRed"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:text="@string/registrar"
+            android:layout_marginTop="30dp"
+            android:fontFamily="@font/urbanist_extrabold"
+            app:layout_constraintTop_toBottomOf="@id/contrasenaEntrada"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

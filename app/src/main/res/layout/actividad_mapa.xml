@@ -3,17 +3,57 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
-    <!-- Barra de búsqueda -->
-    <fragment
-        android:id="@+id/autocomplete_fragment"
-        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+    <!-- Contenedor horizontal: botón + inputs -->
+    <LinearLayout
+        android:id="@+id/contenedorBusqueda"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Botón regresar -->
+        <ImageView
+            android:id="@+id/btnRegresarMapa"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_atras"
+            android:contentDescription="Regresar"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@drawable/fondo_redondo_blanco"
+            android:padding="8dp"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Contenedor vertical para los inputs -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Input de ORIGEN -->
+            <fragment
+                android:id="@+id/autocomplete_origen"
+                android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Input de DESTINO -->
+            <fragment
+                android:id="@+id/autocomplete_fragment"
+                android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <!-- Mapa -->
     <fragment
@@ -21,7 +61,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/autocomplete_fragment"
+        app:layout_constraintTop_toBottomOf="@id/contenedorBusqueda"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>

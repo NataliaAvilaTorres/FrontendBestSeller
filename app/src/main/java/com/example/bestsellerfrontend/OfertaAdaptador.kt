@@ -39,6 +39,8 @@ class OfertaAdaptador(
         val tvLikeCount: TextView = itemView.findViewById(R.id.tvLikeCount)
         val btnEditar: Button? = itemView.findViewById(R.id.btnEditar)
         val btnEliminar: Button? = itemView.findViewById(R.id.btnEliminar)
+        val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
+        val userName: TextView = itemView.findViewById(R.id.userName)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OfertaViewHolder {
@@ -61,6 +63,22 @@ class OfertaAdaptador(
             .load(oferta.producto.urlImagen)
             .into(holder.imagenOferta)
 
+        // 🔹 Foto y nombre del usuario en sesión
+        val prefs = context.getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+        val urlImagenUsuario = prefs.getString("urlImagen", null)
+        val nombreUsuario = prefs.getString("nombre", "Usuario")
+
+        holder.userName.text = nombreUsuario
+        if (!urlImagenUsuario.isNullOrEmpty()) {
+            Glide.with(holder.itemView.context)
+                .load(urlImagenUsuario)
+                .placeholder(R.drawable.perfil)
+                .error(R.drawable.perfil)
+                .circleCrop()
+                .into(holder.profileImage)
+        } else {
+            holder.profileImage.setImageResource(R.drawable.perfil)
+        }
 
         // Likes
         if (oferta.likes == null) oferta.likes = 0

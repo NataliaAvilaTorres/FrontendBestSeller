@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class ProductoAdaptador(private var listaProductos: List<Producto>) :
+class ProductoAdaptador(private var listaOfertas: List<Oferta>) :
     RecyclerView.Adapter<ProductoAdaptador.ProductoViewHolder>() {
 
     class ProductoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -26,18 +26,16 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
     }
 
     override fun onBindViewHolder(holder: ProductoViewHolder, position: Int) {
-        val producto = listaProductos[position]
-
+        val oferta = listaOfertas[position]
+        val producto = oferta.producto
 
         holder.textNombre.text = producto.nombre
         holder.textCategoria.text = producto.categoria
         holder.textPrecio.text = "$${producto.precio}"
 
-
         Glide.with(holder.itemView.context)
             .load(producto.urlImagen)
             .into(holder.imageProducto)
-
 
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
@@ -48,6 +46,8 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
                     putString("producto_categoria", producto.categoria)
                     putDouble("producto_precio", producto.precio)
                     putString("producto_imagen", producto.urlImagen)
+                    putString("oferta_tienda", oferta.tiendaNombre)
+                    putInt("oferta_likes", oferta.likes ?: 0)
                 }
 
                 context.supportFragmentManager.beginTransaction()
@@ -58,10 +58,10 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
         }
     }
 
-    override fun getItemCount(): Int = listaProductos.size
+    override fun getItemCount(): Int = listaOfertas.size
 
-    fun actualizarLista(nuevaLista: List<Producto>) {
-        listaProductos = nuevaLista
+    fun actualizarLista(nuevaLista: List<Oferta>) {
+        listaOfertas = nuevaLista
         notifyDataSetChanged()
     }
 }

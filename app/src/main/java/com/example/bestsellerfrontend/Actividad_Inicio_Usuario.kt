@@ -1,6 +1,5 @@
 package com.example.bestsellerfrontend
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +13,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.FirebaseApp
-import com.google.firebase.database.*
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.bumptech.glide.Glide
 
 class InicioUsuarioFragment : Fragment() {
 
@@ -32,10 +30,6 @@ class InicioUsuarioFragment : Fragment() {
 
     private lateinit var progressScroll: ProgressBar
 
-    // Firebase
-    private lateinit var notificacionesRef: DatabaseReference
-    private var childListener: ChildEventListener? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -43,16 +37,12 @@ class InicioUsuarioFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_inicio_usuario, container, false)
 
+        // --- Saludo ---
         val txtSaludo: TextView = view.findViewById(R.id.txtSaludo)
         val prefs =
             requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
         val nombreUsuario = prefs.getString("nombre", "Usuario")
         txtSaludo.text = "Hola $nombreUsuario, Buen día!"
-
-        // 🚀 Inicializar Firebase si aún no está
-        if (FirebaseApp.getApps(requireContext()).isEmpty()) {
-            FirebaseApp.initializeApp(requireContext())
-        }
 
         // --- RecyclerView de Ofertas ---
         recyclerViewOfertas = view.findViewById(R.id.recyclerViewOfertas)
@@ -73,9 +63,10 @@ class InicioUsuarioFragment : Fragment() {
             }
         })
 
+        // --- API Retrofit ---
         val retrofit = Retrofit.Builder()
             //.baseUrl("http://10.0.2.2:8090/") // emulador
-            .baseUrl("http://192.168.0.7:8090/")
+            .baseUrl("http://192.168.0.7:8090/") // tu backend real
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
@@ -83,6 +74,7 @@ class InicioUsuarioFragment : Fragment() {
         adapterOfertas = OfertaAdaptador(emptyList(), requireContext(), apiService)
         recyclerViewOfertas.adapter = adapterOfertas
 
+        // Llenar ofertas desde el backend
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 ofertas = apiService.listarOfertas()
@@ -92,6 +84,7 @@ class InicioUsuarioFragment : Fragment() {
             }
         }
 
+        // --- RecyclerView de Categorías ---
         recyclerViewCategorias = view.findViewById(R.id.recyclerViewCategorias)
         recyclerViewCategorias.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -118,6 +111,24 @@ class InicioUsuarioFragment : Fragment() {
         }
 
         val btnPerfil: ImageView = view.findViewById(R.id.btnPerfil)
+
+        // Recuperar la URL guardada en SharedPreferences
+        val prefss = requireActivity().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+        val urlImagen = prefss.getString("urlImagen", null)
+
+        // Mostrar la foto del usuario si existe, si no, la imagen por defecto
+        if (!urlImagen.isNullOrEmpty()) {
+            Glide.with(this)
+                .load(urlImagen)
+                .placeholder(R.drawable.perfil) // mientras carga
+                .error(R.drawable.perfil)       // si falla
+                .circleCrop()                   // opcional: redonda
+                .into(btnPerfil)
+        } else {
+            btnPerfil.setImageResource(R.drawable.perfil)
+        }
+
+        // Mantener tu listener para abrir el perfil
         btnPerfil.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.contenedor, Actividad_Perfil_Usuario())
@@ -126,43 +137,5 @@ class InicioUsuarioFragment : Fragment() {
         }
 
         return view
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        notificacionesRef = FirebaseDatabase.getInstance().getReference("notificaciones")
-
-        childListener = object : ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val usuario = snapshot.child("usuario").getValue(String::class.java)
-                val mensaje = snapshot.child("mensaje").getValue(String::class.java)
-
-                // ✅ Usamos context? para no crashear si el fragment ya no está
-                context?.let { ctx ->
-                    if (usuario != null && mensaje != null) {
-                        AlertDialog.Builder(ctx)
-                            .setTitle("📢 Nueva oferta")
-                            .setMessage("$usuario publicó: $mensaje")
-                            .setPositiveButton("OK", null)
-                            .show()
-                    }
-                }
-            }
-
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onChildRemoved(snapshot: DataSnapshot) {}
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onCancelled(error: DatabaseError) {}
-        }
-
-        notificacionesRef.limitToLast(1).addChildEventListener(childListener!!)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        // ✅ Quitamos el listener al salir
-        childListener?.let { notificacionesRef.removeEventListener(it) }
-        childListener = null
     }
 }

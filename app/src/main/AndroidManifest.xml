@@ -10,9 +10,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
-
     <application
-        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -23,8 +21,7 @@
         android:theme="@style/Theme.BestSellerFrontend"
         android:usesCleartextTraffic="true">
 
-
-    <!-- Clave de Google Maps -->
+        <!-- Clave de Google Maps -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAmk_pwGdekb606Okhp9tCKKw5o3XiG4Ic" />
@@ -42,7 +39,6 @@
         <activity android:name=".Actividad_Registro" />
         <activity android:name=".Actividad_Navegacion_Usuario" />
         <activity android:name=".Actividad_Mapa" />
-
 
     </application>
 
