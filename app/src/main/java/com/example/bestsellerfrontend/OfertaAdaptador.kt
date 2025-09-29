@@ -26,7 +26,7 @@ class OfertaAdaptador(
     private var listaOfertas: List<Oferta>,
     private val context: Context,
     private val apiService: ApiService,
-    private val mostrarBotones: Boolean = false //  por defecto no se muestran
+    private val mostrarBotones: Boolean = false // por defecto no se muestran
 ) : RecyclerView.Adapter<OfertaAdaptador.OfertaViewHolder>() {
 
     class OfertaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -63,10 +63,11 @@ class OfertaAdaptador(
             .load(oferta.producto.urlImagen)
             .into(holder.imagenOferta)
 
-        // 🔹 Foto y nombre del usuario en sesión
+        // 🔹 Foto y nombre del usuario en sesión (esto solo muestra el usuario logueado, no el creador real)
         val prefs = context.getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
         val urlImagenUsuario = prefs.getString("urlImagen", null)
         val nombreUsuario = prefs.getString("nombre", "Usuario")
+        val usuarioId = prefs.getString("id", null)
 
         holder.userName.text = nombreUsuario
         if (!urlImagenUsuario.isNullOrEmpty()) {
@@ -81,32 +82,33 @@ class OfertaAdaptador(
         }
 
         // Likes
-        if (oferta.likes == null) oferta.likes = 0
-        if (oferta.likedByUser == null) oferta.likedByUser = false
+        val yaDioLike = usuarioId != null && (oferta.likedBy[usuarioId] == true)
         holder.tvLikeCount.text = oferta.likes.toString()
 
         holder.btnLike.setColorFilter(
-            if (oferta.likedByUser) ContextCompat.getColor(context, R.color.rojo)
+            if (yaDioLike) ContextCompat.getColor(context, R.color.rojo)
             else ContextCompat.getColor(context, R.color.black)
         )
 
         holder.btnLike.setOnClickListener {
-            val nuevoEstado = !oferta.likedByUser
-            oferta.likedByUser = nuevoEstado
-
-            if (nuevoEstado) {
-                oferta.likes += 1
-                holder.btnLike.setColorFilter(ContextCompat.getColor(context, R.color.rojo))
-            } else {
-                oferta.likes -= 1
-                holder.btnLike.setColorFilter(ContextCompat.getColor(context, R.color.black))
+            if (usuarioId == null) {
+                Toast.makeText(context, "Debes iniciar sesión para dar like", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
+            val nuevoEstado = !(oferta.likedBy[usuarioId] ?: false)
+            oferta.likedBy = oferta.likedBy.toMutableMap().apply { put(usuarioId, nuevoEstado) }
+            oferta.likes = if (nuevoEstado) oferta.likes + 1 else maxOf(0, oferta.likes - 1)
+
             holder.tvLikeCount.text = oferta.likes.toString()
+            holder.btnLike.setColorFilter(
+                if (nuevoEstado) ContextCompat.getColor(context, R.color.rojo)
+                else ContextCompat.getColor(context, R.color.black)
+            )
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    apiService.toggleLike(oferta.id ?: "", nuevoEstado)
+                    apiService.toggleLike(oferta.id, usuarioId, nuevoEstado)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

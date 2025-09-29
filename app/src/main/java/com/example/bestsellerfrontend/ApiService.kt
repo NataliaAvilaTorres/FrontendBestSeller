@@ -37,11 +37,13 @@ public interface ApiService {
     ): Respuesta
 
 
-    @POST("api/ofertas/toggleLike")
+    @POST("api/ofertas/{id}/like/{usuarioId}")
     suspend fun toggleLike(
-        @Query("id") id: String,
-        @Query("nuevoEstado") nuevoEstado: Boolean
+        @Path("id") ofertaId: String,
+        @Path("usuarioId") usuarioId: String,
+        @Query("liked") liked: Boolean
     ): Respuesta
+
 
     @PUT("api/ofertas/actualizar/{id}")
     suspend fun actualizarOferta(
