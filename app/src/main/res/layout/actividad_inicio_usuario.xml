@@ -10,7 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="24dp"> <!-- 📌 Espacio superior agregado -->
 
         <!-- Encabezado -->
         <LinearLayout
@@ -67,7 +68,6 @@
             android:src="@drawable/ic_notificacion" />
 
         <!-- Publicaciones -->
-
         <TextView
             android:id="@+id/txtPublicaciones"
             android:layout_width="wrap_content"
@@ -97,7 +97,6 @@
             android:max="100"
             android:progressTint="@color/verde"/>
 
-
         <!-- Categorías -->
         <TextView
             android:id="@+id/txtCategorias"
@@ -120,5 +119,43 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp" />
 
+        <!-- Tiendas cercanas -->
+        <LinearLayout
+            android:id="@+id/layoutTiendasHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/location"
+                android:contentDescription="Location"
+                app:tint="@color/black"
+                android:layout_marginEnd="8dp"/>
+
+            <TextView
+                android:id="@+id/txtTiendasCercanas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tiendas cercanas a ti"
+                android:fontFamily="@font/urbanist_bold"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewTiendas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clipToPadding="false"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            />
     </LinearLayout>
 </ScrollView>

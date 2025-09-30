@@ -17,9 +17,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,7 +28,7 @@ class OfertaAdaptador(
     private var listaOfertas: List<Oferta>,
     private val context: Context,
     private val apiService: ApiService,
-    private val mostrarBotones: Boolean = false // por defecto no se muestran
+    private val mostrarBotones: Boolean = false
 ) : RecyclerView.Adapter<OfertaAdaptador.OfertaViewHolder>() {
 
     class OfertaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -65,26 +65,41 @@ class OfertaAdaptador(
             .load(oferta.producto.urlImagen)
             .into(holder.imagenOferta)
 
-        // 🔹 Foto y nombre del usuario en sesión (esto solo muestra el usuario logueado, no el creador real)
-        val prefs = context.getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
-        val urlImagenUsuario = prefs.getString("urlImagen", null)
-        val nombreUsuario = prefs.getString("nombre", "Usuario")
-        val usuarioId = prefs.getString("id", null)
 
-        holder.userName.text = nombreUsuario
-        if (!urlImagenUsuario.isNullOrEmpty()) {
-            Glide.with(holder.itemView.context)
-                .load(urlImagenUsuario)
-                .placeholder(R.drawable.perfil)
-                .error(R.drawable.perfil)
-                .circleCrop()
-                .into(holder.profileImage)
+        if (!oferta.usuarioId.isNullOrEmpty()) {
+            val ref = FirebaseDatabase.getInstance()
+                .getReference("usuarios")
+                .child(oferta.usuarioId!!)
+
+            ref.get().addOnSuccessListener { snapshot ->
+                val nombre = snapshot.child("nombre").getValue(String::class.java)
+                val foto = snapshot.child("urlImagen").getValue(String::class.java)
+
+                holder.userName.text = nombre ?: "Usuario desconocido"
+
+                if (!foto.isNullOrEmpty()) {
+                    Glide.with(holder.itemView.context)
+                        .load(foto)
+                        .placeholder(R.drawable.perfil)
+                        .error(R.drawable.perfil)
+                        .circleCrop()
+                        .into(holder.profileImage)
+                } else {
+                    holder.profileImage.setImageResource(R.drawable.perfil)
+                }
+            }.addOnFailureListener {
+                holder.userName.text = "Usuario desconocido"
+                holder.profileImage.setImageResource(R.drawable.perfil)
+            }
         } else {
+            holder.userName.text = "Usuario desconocido"
             holder.profileImage.setImageResource(R.drawable.perfil)
         }
 
-        // Likes
-        val yaDioLike = usuarioId != null && (oferta.likedBy[usuarioId] == true)
+        val prefs = context.getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+        val usuarioIdSesion = prefs.getString("id", null)
+
+        val yaDioLike = usuarioIdSesion != null && (oferta.likedBy[usuarioIdSesion] == true)
         holder.tvLikeCount.text = oferta.likes.toString()
 
         holder.btnLike.setColorFilter(
@@ -93,13 +108,13 @@ class OfertaAdaptador(
         )
 
         holder.btnLike.setOnClickListener {
-            if (usuarioId == null) {
+            if (usuarioIdSesion == null) {
                 Toast.makeText(context, "Debes iniciar sesión para dar like", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            val nuevoEstado = !(oferta.likedBy[usuarioId] ?: false)
-            oferta.likedBy = oferta.likedBy.toMutableMap().apply { put(usuarioId, nuevoEstado) }
+            val nuevoEstado = !(oferta.likedBy[usuarioIdSesion] ?: false)
+            oferta.likedBy = oferta.likedBy.toMutableMap().apply { put(usuarioIdSesion, nuevoEstado) }
             oferta.likes = if (nuevoEstado) oferta.likes + 1 else maxOf(0, oferta.likes - 1)
 
             holder.tvLikeCount.text = oferta.likes.toString()
@@ -110,19 +125,18 @@ class OfertaAdaptador(
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    apiService.toggleLike(oferta.id, usuarioId, nuevoEstado)
+                    apiService.toggleLike(oferta.id, usuarioIdSesion, nuevoEstado)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         }
 
-        //  Mostrar botones solo si está en modo MisOfertas
+
         if (mostrarBotones) {
             holder.btnEditar?.visibility = View.VISIBLE
             holder.btnEliminar?.visibility = View.VISIBLE
 
-            // Editar
             holder.btnEditar?.setOnClickListener {
                 val fragment = FormularioNuevaOfertaFragment().apply {
                     arguments = Bundle().apply {
@@ -135,7 +149,6 @@ class OfertaAdaptador(
                     .commit()
             }
 
-            // Eliminar
             holder.btnEliminar?.setOnClickListener {
                 AlertDialog.Builder(context)
                     .setTitle("Eliminar oferta")
@@ -160,10 +173,11 @@ class OfertaAdaptador(
             holder.btnEliminar?.visibility = View.GONE
         }
 
+
         holder.textUbicacion.setOnClickListener {
             val ubicacion = oferta.ubicacion
             if (ubicacion != null) {
-                val intent = android.content.Intent(context, Actividad_Mapa::class.java).apply {
+                val intent = Intent(context, Actividad_Mapa::class.java).apply {
                     putExtra("destino_lat", ubicacion.lat)
                     putExtra("destino_lng", ubicacion.lng)
                     putExtra("destino_direccion", ubicacion.direccion ?: "Ubicación de la tienda")
@@ -173,9 +187,6 @@ class OfertaAdaptador(
                 Toast.makeText(context, "Esta oferta no tiene ubicación registrada", Toast.LENGTH_SHORT).show()
             }
         }
-
-
-
     }
 
     override fun getItemCount(): Int = listaOfertas.size

@@ -15,5 +15,8 @@ data class Oferta(
     val usuarioId: String? = null,
     val productoId: String? = null,
     var likedBy: Map<String, Boolean> = emptyMap(),
-    val ubicacion: Ubicacion? = null
+    val ubicacion: Ubicacion? = null,
+
+    var usuarioNombre: String? = null,
+    var usuarioFoto: String? = null
 ) : Serializable

@@ -20,7 +20,6 @@ class Actividad_IniciarSesion : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔹 Inicializar Firebase al inicio de la app (evita errores con Storage y Auth)
         if (FirebaseApp.getApps(this).isEmpty()) {
             FirebaseApp.initializeApp(this)
         }
@@ -30,7 +29,7 @@ class Actividad_IniciarSesion : AppCompatActivity() {
         // Retrofit
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/") // backend local en emulador
-            //.baseUrl("http://192.168.0.7:8090/") // tu backend real
+            //.baseUrl("http://192.168.0.7:8090/") // backend real
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
@@ -67,7 +66,6 @@ class Actividad_IniciarSesion : AppCompatActivity() {
 
                     if (respuesta.mensaje == "Login exitoso" && respuesta.usuario != null) {
 
-                        // Guardar datos del usuario en SharedPreferences
                         val prefs = getSharedPreferences("usuarioPrefs", MODE_PRIVATE)
                         val editor = prefs.edit()
                         editor.putString("id", respuesta.usuario.id)

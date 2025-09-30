@@ -13,10 +13,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import com.bumptech.glide.Glide
 
 class InicioUsuarioFragment : Fragment() {
 
@@ -28,6 +28,9 @@ class InicioUsuarioFragment : Fragment() {
     private lateinit var recyclerViewCategorias: RecyclerView
     private lateinit var adapterCategorias: CategoriaAdaptador
 
+    private lateinit var recyclerViewTiendas: RecyclerView
+    private lateinit var adapterTiendas: TiendaAdaptador
+
     private lateinit var progressScroll: ProgressBar
 
     override fun onCreateView(
@@ -37,7 +40,6 @@ class InicioUsuarioFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_inicio_usuario, container, false)
 
-        // --- Saludo ---
         val txtSaludo: TextView = view.findViewById(R.id.txtSaludo)
         val prefs =
             requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
@@ -71,10 +73,10 @@ class InicioUsuarioFragment : Fragment() {
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
+        // Ofertas
         adapterOfertas = OfertaAdaptador(emptyList(), requireContext(), apiService)
         recyclerViewOfertas.adapter = adapterOfertas
 
-        // Llenar ofertas desde el backend
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 ofertas = apiService.listarOfertas()
@@ -101,6 +103,24 @@ class InicioUsuarioFragment : Fragment() {
         adapterCategorias = CategoriaAdaptador(categorias)
         recyclerViewCategorias.adapter = adapterCategorias
 
+        // --- RecyclerView de Tiendas Cercanas ---
+        recyclerViewTiendas = view.findViewById(R.id.recyclerViewTiendas)
+        recyclerViewTiendas.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        adapterTiendas = TiendaAdaptador(emptyList(), requireContext())
+        recyclerViewTiendas.adapter = adapterTiendas
+
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val tiendas = apiService.listarTiendas()
+                adapterTiendas.actualizarLista(tiendas)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
         // --- Botones ---
         val btnAdd: ImageButton = view.findViewById(R.id.btnAdd)
         btnAdd.setOnClickListener {
@@ -116,19 +136,17 @@ class InicioUsuarioFragment : Fragment() {
         val prefss = requireActivity().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
         val urlImagen = prefss.getString("urlImagen", null)
 
-        // Mostrar la foto del usuario si existe, si no, la imagen por defecto
         if (!urlImagen.isNullOrEmpty()) {
             Glide.with(this)
                 .load(urlImagen)
-                .placeholder(R.drawable.perfil) // mientras carga
-                .error(R.drawable.perfil)       // si falla
-                .circleCrop()                   // opcional: redonda
+                .placeholder(R.drawable.perfil)
+                .error(R.drawable.perfil)
+                .circleCrop()
                 .into(btnPerfil)
         } else {
             btnPerfil.setImageResource(R.drawable.perfil)
         }
 
-        // Mantener tu listener para abrir el perfil
         btnPerfil.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.contenedor, Actividad_Perfil_Usuario())

@@ -19,7 +19,7 @@ class NotificacionesFragment : Fragment() {
 
     data class NotificacionFirebase(
         val id: String? = null,
-        val usuario: String? = null, // 👈 Aquí viene el usuarioId
+        val usuario: String? = null,
         val mensaje: String? = null,
         val timestamp: Long? = null,
         val idOferta: String? = null
@@ -43,10 +43,8 @@ class NotificacionesFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // 🚀 Referencia a notificaciones
         notificacionesRef = FirebaseDatabase.getInstance().getReference("notificaciones")
 
-        // Cargar notificaciones en tiempo real
         cargarNotificaciones()
 
         return view
@@ -63,7 +61,6 @@ class NotificacionesFragment : Fragment() {
                     if (notif != null) {
                         val usuarioId = notif.usuario ?: ""
 
-                        // 🔍 Buscar el nombre real en la rama usuarios
                         val usuarioRef = FirebaseDatabase.getInstance()
                             .getReference("usuarios")
                             .child(usuarioId)
@@ -84,7 +81,7 @@ class NotificacionesFragment : Fragment() {
 
                                 lista.add(notificacionConNombre)
 
-                                // 🔄 Ordenar por fecha (más recientes primero)
+                                //  Ordenar por fecha
                                 lista.sortByDescending { it.timestamp }
 
                                 // Notificar cambios al adaptador

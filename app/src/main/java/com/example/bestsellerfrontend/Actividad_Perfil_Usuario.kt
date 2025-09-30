@@ -66,7 +66,6 @@ class Actividad_Perfil_Usuario : Fragment() {
         ciudadTextView.text = ciudad
         contrasenaTextView.text = "*".repeat(contrasena.length)
 
-        // cargar foto si ya tiene
         if (!urlImagen.isNullOrEmpty()) {
             Glide.with(this).load(urlImagen).into(fotoPerfil)
         }
@@ -98,7 +97,6 @@ class Actividad_Perfil_Usuario : Fragment() {
             startActivity(intent)
         }
 
-        // Botón eliminar cuenta
         btnEliminarCuenta.setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Eliminar cuenta")
@@ -116,7 +114,6 @@ class Actividad_Perfil_Usuario : Fragment() {
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
         }
 
-        // Listeners de editar
         view.findViewById<ImageView>(R.id.btnEditarNombre).setOnClickListener {
             mostrarDialogoEditar("Editar Nombre", nombreTextView.text.toString()) { nuevoValor ->
                 actualizarCampoUsuario(id, nuevoValor, "nombre", nombreTextView)
@@ -144,7 +141,6 @@ class Actividad_Perfil_Usuario : Fragment() {
         return view
     }
 
-    // Paso 4: recibir la imagen seleccionada
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -156,7 +152,6 @@ class Actividad_Perfil_Usuario : Fragment() {
         }
     }
 
-    // Paso 5: subir imagen a Firebase Storage y actualizar usuario
     private fun subirImagenAFirebase(uri: Uri) {
         val id = prefs.getString("id", "") ?: return
         val fileRef = storageRef.child("usuarios/$id/perfil.jpg")

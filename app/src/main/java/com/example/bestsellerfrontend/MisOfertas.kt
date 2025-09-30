@@ -28,7 +28,6 @@ class MisOfertas : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_mis_ofertas, container, false)
 
-        //  Inicializar Retrofit y ApiService
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -40,7 +39,6 @@ class MisOfertas : Fragment() {
         adapter = OfertaAdaptador(emptyList(), requireContext(), apiService, mostrarBotones = true)
         recyclerView.adapter = adapter
 
-        //  Obtener id del usuario logueado desde SharedPreferences
         val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
         val usuarioId = prefs.getString("id", null)
 

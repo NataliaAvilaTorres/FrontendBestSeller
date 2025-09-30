@@ -50,7 +50,6 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.actividad_mapa)
 
-        // 📌 Recibir destino desde OfertaAdaptador
         val lat = intent.getDoubleExtra("destino_lat", Double.NaN)
         val lng = intent.getDoubleExtra("destino_lng", Double.NaN)
         direccionDestino = intent.getStringExtra("destino_direccion")
@@ -78,9 +77,7 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
             .build()
         placesService = retrofitPlaces.create(ApiService::class.java)
 
-        // ============================
         // Autocomplete ORIGEN
-        // ============================
         autocompleteOrigen =
             supportFragmentManager.findFragmentById(R.id.autocomplete_origen)
                     as? AutocompleteSupportFragment
@@ -100,16 +97,14 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
             }
         })
 
-        // ============================
         // Autocomplete DESTINO
-        // ============================
         val autocompleteDestino =
             supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                     as AutocompleteSupportFragment
         autocompleteDestino.setHint("Busca la tienda")
         autocompleteDestino.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
 
-        // 👇 Prellenar con la dirección que recibimos desde la oferta
+        //  Rellena ahi mismo con la dirección que recibimos desde la oferta
         direccionDestino?.let { autocompleteDestino.setText(it) }
 
         autocompleteDestino.setOnPlaceSelectedListener(object : PlaceSelectionListener {
@@ -135,7 +130,6 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // 📍 Si ya recibimos destino, lo mostramos
         destinoLatLng?.let {
             markerDestino = mMap.addMarker(
                 MarkerOptions()

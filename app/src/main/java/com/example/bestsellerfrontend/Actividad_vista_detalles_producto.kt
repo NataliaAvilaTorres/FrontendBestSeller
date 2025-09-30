@@ -47,7 +47,6 @@ class DetalleProductoFragment : Fragment() {
         recyclerViewSimilares.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
-        // Inicializar Retrofit antes de usar adaptador
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
             //.baseUrl("http://192.168.0.7:8090/")
@@ -62,7 +61,6 @@ class DetalleProductoFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // Recuperar datos de la oferta enviados desde el adaptador
         val productoNombre = arguments?.getString("producto_nombre") ?: ""
         val productoCategoria = arguments?.getString("producto_categoria") ?: ""
         val productoPrecio = arguments?.getDouble("producto_precio") ?: 0.0
@@ -77,14 +75,14 @@ class DetalleProductoFragment : Fragment() {
         chipTienda.text = ofertaTienda
         chipLikes.text = ofertaLikes.toString()
 
-        // Cargar la imagen del producto con Glide
+        // Carga la imagen del producto con Glide
         if (productoImagen.isNotEmpty()) {
             Glide.with(this)
                 .load(productoImagen)
                 .into(productImage)
         }
 
-        // Cargar ofertas similares desde backend
+        // Carga ofertas similares desde backend
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val todasLasOfertas = apiService.listarOfertas()

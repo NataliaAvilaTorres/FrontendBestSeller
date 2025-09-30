@@ -34,7 +34,6 @@ class NotificacionAdaptador(private val lista: List<Notificacion>) :
 
     override fun getItemCount(): Int = lista.size
 
-    // 👇 función para formatear el tiempo
     private fun tiempoRelativo(timestamp: Long?): String {
         if (timestamp == null) return ""
         val diff = System.currentTimeMillis() - timestamp

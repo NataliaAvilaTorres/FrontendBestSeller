@@ -49,15 +49,13 @@ class Actividad_Ver_Publicaciones : Fragment() {
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        //  Pasamos mostrarBotones = true para habilitar Editar/Eliminar
         adapter = OfertaAdaptador(emptyList(), requireContext(), apiService, mostrarBotones = true)
         recyclerView.adapter = adapter
 
-        // 🔑 Obtener id del usuario logueado desde SharedPreferences
         val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
         val usuarioId = prefs.getString("id", null)
 
-        // 🚀 Cargar solo las publicaciones del usuario
+        //  Carga solo las publicaciones del usuario
         if (usuarioId != null) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
@@ -72,17 +70,14 @@ class Actividad_Ver_Publicaciones : Fragment() {
         val tvNumeroPublicaciones = view.findViewById<TextView>(R.id.tvNumeroPublicaciones)
         val tvLikesRecibidos = view.findViewById<TextView>(R.id.tvLikesRecibidos)
 
-        // Cargar publicaciones del usuario
         if (usuarioId != null) {
             lifecycleScope.launch {
                 try {
                     publicaciones = apiService.listarOfertasUsuario(usuarioId)
                     adapter.actualizarLista(publicaciones)
 
-                    // 👉 Número de publicaciones
                     tvNumeroPublicaciones.text = publicaciones.size.toString()
 
-                    // 👉 Total de likes recibidos
                     val totalLikes = publicaciones.sumOf { it.likes }
                     tvLikesRecibidos.text = totalLikes.toString()
 

@@ -66,10 +66,10 @@ public interface ApiService {
     // 🔹 ENDPOINT DE GOOGLE PLACES (TIENDAS, SUPERMERCADOS CERCANOS)
     @GET("maps/api/place/nearbysearch/json")
     suspend fun buscarLugaresCercanos(
-        @Query("location") ubicacion: String,   // Ej: "4.60971,-74.08175"
-        @Query("radius") radio: Int,            // Ej: 2000 (metros)
-        @Query("type") tipo: String = "supermarket", // Tipo de lugar
-        @Query("key") apiKey: String            // Tu API Key de Google
+        @Query("location") ubicacion: String,
+        @Query("radius") radio: Int,
+        @Query("type") tipo: String = "supermarket",
+        @Query("key") apiKey: String
     ): RespuestaLugares
 
     @GET("/api/notificaciones/listar")
