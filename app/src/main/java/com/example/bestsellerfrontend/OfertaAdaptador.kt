@@ -2,6 +2,7 @@ package com.example.bestsellerfrontend
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -157,6 +159,23 @@ class OfertaAdaptador(
             holder.btnEditar?.visibility = View.GONE
             holder.btnEliminar?.visibility = View.GONE
         }
+
+        holder.textUbicacion.setOnClickListener {
+            val ubicacion = oferta.ubicacion
+            if (ubicacion != null) {
+                val intent = android.content.Intent(context, Actividad_Mapa::class.java).apply {
+                    putExtra("destino_lat", ubicacion.lat)
+                    putExtra("destino_lng", ubicacion.lng)
+                    putExtra("destino_direccion", ubicacion.direccion ?: "Ubicación de la tienda")
+                }
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, "Esta oferta no tiene ubicación registrada", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
+
     }
 
     override fun getItemCount(): Int = listaOfertas.size

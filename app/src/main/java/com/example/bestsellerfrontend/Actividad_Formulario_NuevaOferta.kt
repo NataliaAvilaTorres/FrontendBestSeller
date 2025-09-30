@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -34,7 +33,6 @@ import java.util.Locale
 import java.util.UUID
 import android.widget.AutoCompleteTextView
 
-
 class FormularioNuevaOfertaFragment : Fragment() {
 
     private lateinit var apiService: ApiService
@@ -48,6 +46,10 @@ class FormularioNuevaOfertaFragment : Fragment() {
     private val GALLERY_REQUEST = 1001
     private val CAMERA_REQUEST = 1002
     private val CAMERA_PERMISSION_REQUEST = 2001
+
+    // 📌 Para manejar tiendas
+    private var tiendas: List<Tienda> = emptyList()
+    private var tiendaSeleccionada: Tienda? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,15 +65,13 @@ class FormularioNuevaOfertaFragment : Fragment() {
         storage = Firebase.storage
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/")
-            //.baseUrl("http://192.168.0.7:8090/")
+            .baseUrl("http://10.0.2.2:8090/") // 👈 ajusta a tu backend real si es necesario
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
         val etNombreOferta = view.findViewById<TextInputEditText>(R.id.etNombreOferta)
         val etDescripcion = view.findViewById<TextInputEditText>(R.id.etDescripcion)
-        val etTienda = view.findViewById<TextInputEditText>(R.id.etTienda)
         val etFecha = view.findViewById<TextInputEditText>(R.id.etFecha)
 
         val etProdNombre = view.findViewById<TextInputEditText>(R.id.etProdNombre)
@@ -79,6 +79,9 @@ class FormularioNuevaOfertaFragment : Fragment() {
         val etProdPrecio = view.findViewById<TextInputEditText>(R.id.etProdPrecio)
 
         val actvCategoria = view.findViewById<AutoCompleteTextView>(R.id.actvCategoria)
+        val actvTienda = view.findViewById<AutoCompleteTextView>(R.id.actvTienda)
+
+        // 📌 Categorías
         val categorias = listOf(
             "Granos y Cereales",
             "Bebidas",
@@ -93,9 +96,28 @@ class FormularioNuevaOfertaFragment : Fragment() {
             categorias
         )
         actvCategoria.setAdapter(adapterCategorias)
+        actvCategoria.setOnClickListener { actvCategoria.showDropDown() }
 
-        actvCategoria.setOnClickListener {
-            actvCategoria.showDropDown()
+        // 📌 Cargar tiendas desde backend
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                tiendas = apiService.listarTiendas()
+                val nombresTiendas = tiendas.map { it.nombre }
+                val adapterTiendas = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_dropdown_item_1line,
+                    nombresTiendas
+                )
+                actvTienda.setAdapter(adapterTiendas)
+
+                actvTienda.setOnClickListener { actvTienda.showDropDown() }
+
+                actvTienda.setOnItemClickListener { _, _, position, _ ->
+                    tiendaSeleccionada = tiendas[position]
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error cargando tiendas", Toast.LENGTH_SHORT).show()
+            }
         }
 
         val btnGuardar = view.findViewById<Button>(R.id.btnGuardarOferta)
@@ -103,7 +125,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
         val btnCamara = view.findViewById<Button>(R.id.btnTomarFoto)
         imgPreview = view.findViewById(R.id.imgPreviewOferta)
 
-        // Selector de fecha
+        // 📅 Selector de fecha
         etFecha.setOnClickListener {
             val y = cal.get(Calendar.YEAR)
             val m = cal.get(Calendar.MONTH)
@@ -115,27 +137,22 @@ class FormularioNuevaOfertaFragment : Fragment() {
             }, y, m, d).show()
         }
 
-        // Galería
+        // 📸 Galería
         btnGaleria.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             startActivityForResult(intent, GALLERY_REQUEST)
         }
 
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
-        btnRegresar.setOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
+        btnRegresar.setOnClickListener { parentFragmentManager.popBackStack() }
 
-        // Cámara con verificación de permiso
-        btnCamara.setOnClickListener {
-            verificarPermisoCamara()
-        }
+        // 📸 Cámara con verificación de permiso
+        btnCamara.setOnClickListener { verificarPermisoCamara() }
 
-        // Guardar
+        // 📌 Guardar oferta
         btnGuardar.setOnClickListener {
             val nombreOferta = etNombreOferta.text?.toString()?.trim().orEmpty()
             val descripcion = etDescripcion.text?.toString()?.trim().orEmpty()
-            val tienda = etTienda.text?.toString()?.trim().orEmpty()
             val fechaStr = etFecha.text?.toString()?.trim().orEmpty()
 
             val prodNombre = etProdNombre.text?.toString()?.trim().orEmpty()
@@ -143,10 +160,9 @@ class FormularioNuevaOfertaFragment : Fragment() {
             val prodCategoria = actvCategoria.text?.toString()?.trim().orEmpty()
             val prodPrecioStr = etProdPrecio.text?.toString()?.trim().orEmpty()
 
-            if (nombreOferta.isEmpty() || descripcion.isEmpty() || tienda.isEmpty() ||
+            if (nombreOferta.isEmpty() || descripcion.isEmpty() || tiendaSeleccionada == null ||
                 fechaStr.isEmpty() || imagenUri == null ||
-                prodNombre.isEmpty() || prodMarca.isEmpty() || prodCategoria.isEmpty() ||
-                prodPrecioStr.isEmpty()
+                prodNombre.isEmpty() || prodMarca.isEmpty() || prodCategoria.isEmpty() || prodPrecioStr.isEmpty()
             ) {
                 Toast.makeText(requireContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -169,7 +185,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
             uploadTask.addOnSuccessListener {
                 ref.downloadUrl.addOnSuccessListener { downloadUri ->
-
                     val producto = Producto(
                         categoria = prodCategoria,
                         marca = prodMarca,
@@ -181,10 +196,11 @@ class FormularioNuevaOfertaFragment : Fragment() {
                     val nuevaOferta = Oferta(
                         nombreOferta = nombreOferta,
                         descripcionOferta = descripcion,
-                        tiendaNombre = tienda,
+                        tiendaId = tiendaSeleccionada!!.id,
                         fechaOferta = fechaMillis,
                         urlImagen = downloadUri.toString(),
-                        producto = producto
+                        producto = producto,
+                        ubicacion = tiendaSeleccionada!!.ubicacion // 👈 ahora solo una ubicación
                     )
 
                     val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
@@ -216,14 +232,8 @@ class FormularioNuevaOfertaFragment : Fragment() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.CAMERA),
-                CAMERA_PERMISSION_REQUEST
-            )
-        } else {
-            abrirCamara()
-        }
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST)
+        } else abrirCamara()
     }
 
     // 📸 Abrir cámara
@@ -233,18 +243,13 @@ class FormularioNuevaOfertaFragment : Fragment() {
     }
 
     // Callback permisos
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == CAMERA_PERMISSION_REQUEST &&
             grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
-        ) {
-            abrirCamara()
-        } else if (requestCode == CAMERA_PERMISSION_REQUEST) {
+        ) abrirCamara()
+        else if (requestCode == CAMERA_PERMISSION_REQUEST) {
             Toast.makeText(requireContext(), "Se necesita el permiso de cámara", Toast.LENGTH_SHORT).show()
         }
     }
@@ -259,7 +264,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
             } else if (requestCode == CAMERA_REQUEST && data?.extras != null) {
                 val bitmap = data.extras!!.get("data") as android.graphics.Bitmap
                 imgPreview.setImageBitmap(bitmap)
-
                 val path = MediaStore.Images.Media.insertImage(
                     requireContext().contentResolver,
                     bitmap,

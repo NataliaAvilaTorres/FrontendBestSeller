@@ -44,9 +44,20 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
     private var origenLatLng: LatLng? = null
     private var destinoLatLng: LatLng? = null
 
+    private var direccionDestino: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.actividad_mapa)
+
+        // 📌 Recibir destino desde OfertaAdaptador
+        val lat = intent.getDoubleExtra("destino_lat", Double.NaN)
+        val lng = intent.getDoubleExtra("destino_lng", Double.NaN)
+        direccionDestino = intent.getStringExtra("destino_direccion")
+
+        if (!lat.isNaN() && !lng.isNaN()) {
+            destinoLatLng = LatLng(lat, lng)
+        }
 
         val btnRegresar = findViewById<android.widget.ImageView>(R.id.btnRegresarMapa)
         btnRegresar.setOnClickListener { finish() }
@@ -80,7 +91,7 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
                 place.latLng?.let {
                     origenLatLng = it
                     actualizarMarkerOrigen(it, "Origen: ${place.name}")
-                    dibujarRuta() // 👉 si ya hay destino, dibuja la ruta
+                    dibujarRuta()
                 }
             }
 
@@ -92,12 +103,16 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
         // ============================
         // Autocomplete DESTINO
         // ============================
-        val autocompleteFragment =
+        val autocompleteDestino =
             supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                     as AutocompleteSupportFragment
-        autocompleteFragment.setHint("Busca la tienda")
-        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
-        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+        autocompleteDestino.setHint("Busca la tienda")
+        autocompleteDestino.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
+
+        // 👇 Prellenar con la dirección que recibimos desde la oferta
+        direccionDestino?.let { autocompleteDestino.setText(it) }
+
+        autocompleteDestino.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
                 place.latLng?.let {
                     destinoLatLng = it
@@ -107,8 +122,7 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
                     )
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
                     buscarSupermercados(it.latitude, it.longitude)
-
-                    dibujarRuta() // 👉 si ya hay origen, dibuja la ruta
+                    dibujarRuta()
                 }
             }
 
@@ -120,6 +134,16 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
+        // 📍 Si ya recibimos destino, lo mostramos
+        destinoLatLng?.let {
+            markerDestino = mMap.addMarker(
+                MarkerOptions()
+                    .position(it)
+                    .title("Destino: ${direccionDestino ?: "Destino"}")
+            )
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+        }
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -198,9 +222,6 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // ============================
-    // DIBUJAR RUTA con Directions API
-    // ============================
     private fun dibujarRuta() {
         if (origenLatLng == null || destinoLatLng == null) return
 
@@ -224,9 +245,7 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
 
                 val decodedPath = decodePolyline(puntos)
 
-                // limpiar polyline anterior
                 polylineRuta?.remove()
-
                 polylineRuta = mMap.addPolyline(
                     PolylineOptions()
                         .addAll(decodedPath)
@@ -239,7 +258,6 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // Decodifica polyline de Google Directions
     private fun decodePolyline(encoded: String): List<LatLng> {
         val poly = ArrayList<LatLng>()
         var index = 0
@@ -269,10 +287,7 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
             val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
             lng += dlng
 
-            val latLng = LatLng(
-                lat.toDouble() / 1E5,
-                lng.toDouble() / 1E5
-            )
+            val latLng = LatLng(lat.toDouble() / 1E5, lng.toDouble() / 1E5)
             poly.add(latLng)
         }
         return poly

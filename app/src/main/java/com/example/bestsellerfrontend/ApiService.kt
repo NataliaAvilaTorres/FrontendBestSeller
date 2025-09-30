@@ -74,4 +74,20 @@ public interface ApiService {
 
     @GET("/api/notificaciones/listar")
     suspend fun listarNotificaciones(): List<Notificacion>
+
+//TIENDASS
+    @POST("api/tiendas/crear")
+    suspend fun crearTienda(@Body tienda: Tienda): Respuesta
+
+    @GET("api/tiendas/listar")
+    suspend fun listarTiendas(): List<Tienda>
+
+    @GET("api/tiendas/{id}")
+    suspend fun obtenerTienda(@Path("id") id: String): Tienda
+
+    @PUT("api/tiendas/actualizar/{id}")
+    suspend fun actualizarTienda(@Path("id") id: String, @Body tienda: Tienda): Respuesta
+
+    @DELETE("api/tiendas/eliminar/{id}")
+    suspend fun eliminarTienda(@Path("id") id: String): Respuesta
 }

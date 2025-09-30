@@ -46,7 +46,7 @@ class ProductoAdaptador(private var listaOfertas: List<Oferta>) :
                     putString("producto_categoria", producto.categoria)
                     putDouble("producto_precio", producto.precio)
                     putString("producto_imagen", producto.urlImagen)
-                    putString("oferta_tienda", oferta.tiendaNombre)
+                    putString("oferta_tienda", oferta.tiendaId)
                     putInt("oferta_likes", oferta.likes ?: 0)
                 }
 
