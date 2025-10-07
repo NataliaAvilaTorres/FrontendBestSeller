@@ -32,7 +32,6 @@ class OfertaAdaptador(
 ) : RecyclerView.Adapter<OfertaAdaptador.OfertaViewHolder>() {
 
     class OfertaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imagenOferta: ImageView = itemView.findViewById(R.id.imagenOferta)
         val textNombre: TextView = itemView.findViewById(R.id.nombreOferta)
         val textDescripcion: TextView = itemView.findViewById(R.id.descripcionOferta)
         val textFecha: TextView = itemView.findViewById(R.id.fechaOferta)
@@ -61,9 +60,6 @@ class OfertaAdaptador(
         val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         holder.textFecha.text = formato.format(fecha)
 
-        Glide.with(holder.itemView.context)
-            .load(oferta.producto.urlImagen)
-            .into(holder.imagenOferta)
 
 
         if (!oferta.usuarioId.isNullOrEmpty()) {

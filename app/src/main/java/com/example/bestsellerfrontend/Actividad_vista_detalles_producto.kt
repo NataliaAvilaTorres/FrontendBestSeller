@@ -82,19 +82,8 @@ class DetalleProductoFragment : Fragment() {
                 .into(productImage)
         }
 
-        // Carga ofertas similares desde backend
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val todasLasOfertas = apiService.listarOfertas()
-                ofertasSimilares = todasLasOfertas.filter {
-                    it.producto.categoria == productoCategoria &&
-                            it.producto.nombre != productoNombre
-                }
-                adapter.actualizarLista(ofertasSimilares)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+
+
         return view
     }
 }

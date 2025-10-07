@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-class ProductoAdaptador(private var listaOfertas: List<Oferta>) :
+class ProductoAdaptador(private var listaProductos: List<Producto>) :
     RecyclerView.Adapter<ProductoAdaptador.ProductoViewHolder>() {
 
     class ProductoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -26,11 +26,10 @@ class ProductoAdaptador(private var listaOfertas: List<Oferta>) :
     }
 
     override fun onBindViewHolder(holder: ProductoViewHolder, position: Int) {
-        val oferta = listaOfertas[position]
-        val producto = oferta.producto
+        val producto = listaProductos[position]
 
         holder.textNombre.text = producto.nombre
-        holder.textCategoria.text = producto.categoria
+        holder.textCategoria.text = producto.marca?.categoria ?: "Sin categoría"
         holder.textPrecio.text = "$${producto.precio}"
 
         Glide.with(holder.itemView.context)
@@ -43,11 +42,10 @@ class ProductoAdaptador(private var listaOfertas: List<Oferta>) :
                 val fragment = DetalleProductoFragment()
                 fragment.arguments = android.os.Bundle().apply {
                     putString("producto_nombre", producto.nombre)
-                    putString("producto_categoria", producto.categoria)
+                    putString("producto_categoria", producto.marca?.categoria ?: "")
                     putDouble("producto_precio", producto.precio)
                     putString("producto_imagen", producto.urlImagen)
-                    putString("oferta_tienda", oferta.tiendaId)
-                    putInt("oferta_likes", oferta.likes ?: 0)
+                    //putString("producto_tiendaId", producto.)
                 }
 
                 context.supportFragmentManager.beginTransaction()
@@ -58,10 +56,10 @@ class ProductoAdaptador(private var listaOfertas: List<Oferta>) :
         }
     }
 
-    override fun getItemCount(): Int = listaOfertas.size
+    override fun getItemCount(): Int = listaProductos.size
 
-    fun actualizarLista(nuevaLista: List<Oferta>) {
-        listaOfertas = nuevaLista
+    fun actualizarLista(nuevaLista: List<Producto>) {
+        listaProductos = nuevaLista
         notifyDataSetChanged()
     }
 }

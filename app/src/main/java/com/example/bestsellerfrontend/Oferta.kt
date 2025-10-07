@@ -8,15 +8,13 @@ data class Oferta(
     val descripcionOferta: String,
     val tiendaId: String,
     val fechaOferta: Long,
-    val producto: Producto,
-    val urlImagen: String,
+    val fechaFinal: Long,
     var likes: Int = 0,
     var likedByUser: Boolean = false,
     val usuarioId: String? = null,
     val productoId: String? = null,
     var likedBy: Map<String, Boolean> = emptyMap(),
     val ubicacion: Ubicacion? = null,
-
     var usuarioNombre: String? = null,
     var usuarioFoto: String? = null
 ) : Serializable

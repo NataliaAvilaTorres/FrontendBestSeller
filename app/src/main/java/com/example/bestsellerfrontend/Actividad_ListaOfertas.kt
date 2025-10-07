@@ -105,20 +105,7 @@ class ListaOfertasFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        spinnerPrecio.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {
-                if (ofertas.isNotEmpty()) {
-                    val listaOrdenada = when (position) {
-                        0 -> ofertas.sortedBy { it.producto.precio }
-                        1 -> ofertas.sortedByDescending { it.producto.precio }
-                        else -> ofertas
-                    }
-                    adapter.actualizarLista(listaOrdenada)
-                }
-            }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
 
         spinnerLikes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {

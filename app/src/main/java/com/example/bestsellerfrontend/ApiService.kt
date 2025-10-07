@@ -11,6 +11,9 @@ import retrofit2.http.Query
 
 public interface ApiService {
 
+    @GET("api/marcas/listar")
+    suspend fun listarMarcas(): List<Marca>
+
     @POST("api/usuarios/registrar")
     suspend fun registrarUsuario(@Body usuario: Usuario): Respuesta
 
@@ -75,7 +78,11 @@ public interface ApiService {
     @GET("/api/notificaciones/listar")
     suspend fun listarNotificaciones(): List<Notificacion>
 
-//TIENDASS
+    // 🔹 NUEVO: Listar productos por tienda
+    @GET("api/productos/listar/tienda/{tiendaId}")
+    suspend fun listarProductosTienda(@Path("tiendaId") tiendaId: String): List<Producto>
+
+    //TIENDASS
     @POST("api/tiendas/crear")
     suspend fun crearTienda(@Body tienda: Tienda): Respuesta
 

@@ -21,7 +21,7 @@ class ListaProductosFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ProductoAdaptador
     private lateinit var apiService: ApiService
-    private var ofertas: List<Oferta> = emptyList()  // lista de ofertas ahora
+    private var ofertas: List<Producto> = emptyList()  // lista de ofertas ahora
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,13 +62,14 @@ class ListaProductosFragment : Fragment() {
         // --- CARGA DE DATOS ---
         lifecycleScope.launch {
             try {
-                ofertas = apiService.listarOfertas()
+                ofertas = apiService.listarProductos()
 
                 val listaFiltrada = if (categoriaFiltro != null) {
-                    ofertas.filter { it.producto.categoria.equals(categoriaFiltro, ignoreCase = true) }
+                    ofertas.filter { it.marca.categoria.equals(categoriaFiltro, ignoreCase = true) }
                 } else {
                     ofertas
                 }
+
 
                 adapter.actualizarLista(listaFiltrada)
                 ofertas = listaFiltrada
@@ -98,8 +99,8 @@ class ListaProductosFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 if (ofertas.isNotEmpty()) {
                     val listaOrdenada = when (position) {
-                        0 -> ofertas.sortedBy { it.producto.nombre }
-                        1 -> ofertas.sortedByDescending { it.producto.nombre }
+                        0 -> ofertas.sortedBy { it.nombre }
+                        1 -> ofertas.sortedByDescending { it.nombre }
                         else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)
@@ -113,8 +114,8 @@ class ListaProductosFragment : Fragment() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 if (ofertas.isNotEmpty()) {
                     val listaOrdenada = when (position) {
-                        0 -> ofertas.sortedBy { it.producto.precio }
-                        1 -> ofertas.sortedByDescending { it.producto.precio }
+                        0 -> ofertas.sortedBy { it.precio }
+                        1 -> ofertas.sortedByDescending { it.precio }
                         else -> ofertas
                     }
                     adapter.actualizarLista(listaOrdenada)

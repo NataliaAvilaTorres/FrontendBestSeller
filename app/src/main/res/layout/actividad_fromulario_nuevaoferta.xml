@@ -67,7 +67,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Nombre oferta -->
+            <!-- Nombre oferta (automático) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -81,11 +81,12 @@
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNombreOferta"
-                        android:hint="Nombre de la oferta"
+                        android:hint="Nombre de la oferta (automático)"
                         android:fontFamily="@font/urbanist_semibold"
                         android:textSize="16sp"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:enabled="false"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -136,7 +137,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Fecha -->
+            <!-- Fecha final -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -149,8 +150,8 @@
                     android:padding="12dp">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etFecha"
-                        android:hint="Fecha (dd/MM/yyyy)"
+                        android:id="@+id/etFechaFinal"
+                        android:hint="Fecha final (dd/MM/yyyy)"
                         android:focusable="false"
                         android:clickable="true"
                         android:fontFamily="@font/urbanist_semibold"
@@ -160,42 +161,9 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Imagen Oferta -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Imagen de la oferta"
-                android:layout_marginTop="16dp"
-                android:textStyle="bold"/>
 
-            <ImageView
-                android:id="@+id/imgPreviewOferta"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:scaleType="centerCrop"
-                />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
-
-                <Button
-                    android:id="@+id/btnSeleccionarImagen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Galería"/>
-
-                <Button
-                    android:id="@+id/btnTomarFoto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="Cámara"/>
-            </LinearLayout>
-
-            <!-- Producto: todos los campos de texto intactos -->
+            <!-- Producto: selección según tienda -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -206,65 +174,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="12dp">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etProdNombre"
-                        android:hint="Nombre producto"
-                        android:fontFamily="@font/urbanist_semibold"
-                        android:textSize="16sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-                </com.google.android.material.textfield.TextInputLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="8dp">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etProdMarca"
-                        android:hint="Marca"
-                        android:fontFamily="@font/urbanist_semibold"
-                        android:textSize="16sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-                </com.google.android.material.textfield.TextInputLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="8dp">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tlCategoria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Categoría"
-                    android:padding="20dp">
 
                     <AutoCompleteTextView
-                        android:id="@+id/actvCategoria"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:inputType="none"
+                        android:id="@+id/etProdNombre"
+                        android:hint="Selecciona producto"
                         android:fontFamily="@font/urbanist_semibold"
                         android:textSize="16sp"
-                        android:completionThreshold="1"
-                        android:paddingStart="12dp"/>
-
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
-
+            <!-- Precio del producto -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -278,7 +199,7 @@
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etProdPrecio"
-                        android:hint="Precio"
+                        android:hint="Precio del producto"
                         android:inputType="numberDecimal"
                         android:fontFamily="@font/urbanist_semibold"
                         android:textSize="16sp"
@@ -286,6 +207,8 @@
                         android:layout_height="wrap_content"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
+
+
 
             <!-- Botón guardar -->
             <com.google.android.material.button.MaterialButton
