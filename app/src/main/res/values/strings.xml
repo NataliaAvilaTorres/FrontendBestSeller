@@ -31,6 +31,7 @@
     <string name="categorias_de_productos">🛍️ Categorias de productos</string>
     <string name="perfil_del_usuario">Perfil del usuario</string>
     <string name="informaci_n">Información</string>
+    <string name="elige_una_categoria">☑️ Elige una categoria</string>
 
     <string-array name="ciudades_array">
         <item>Selecciona tu ciudad</item>

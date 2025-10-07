@@ -77,18 +77,22 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:textColorHint="@color/white">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etNombreOferta"
-                        android:hint="Nombre de la oferta (automático)"
+                        android:hint="Nombre de la oferta"
                         android:fontFamily="@font/urbanist_semibold"
+                        android:textColor="@color/white"
                         android:textSize="16sp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:enabled="false"/>
+                        android:enabled="false"
+                        android:background="@drawable/fondo1" />
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
+
 
             <!-- Descripción -->
             <com.google.android.material.card.MaterialCardView
@@ -100,15 +104,18 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:textColorHint="@color/white">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etDescripcion"
                         android:hint="Descripción"
                         android:fontFamily="@font/urbanist_semibold"
+                        android:textColor="@color/white"
                         android:textSize="16sp"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/fondo1"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -123,19 +130,78 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Selecciona Tienda"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:textColorHint="@color/white">
 
                     <AutoCompleteTextView
                         android:id="@+id/actvTienda"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="none"
-                        android:fontFamily="@font/urbanist_semibold"
-                        android:textSize="16sp"
+                        android:layout_height="51dp"
+                        android:background="@drawable/fondo1"
+                        android:textColor="@color/white"
                         android:completionThreshold="1"
-                        android:paddingStart="12dp"/>
+                        android:fontFamily="@font/urbanist_semibold"
+                        android:inputType="none"
+                        android:paddingStart="12dp"
+                        android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Categorías -->
+            <TextView
+                android:id="@+id/txtCategorias"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/urbanist_semibold"
+                android:text="@string/elige_una_categoria"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewCategorias"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+
+            <!-- Producto: selección según tienda -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Selecciona producto"
+                        android:textColor="@color/darker_gray"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/urbanist_semibold"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerProductos"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:spinnerMode="dropdown"
+                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/fondo1"
+                        android:dropDownVerticalOffset="8dp"
+                        android:outlineAmbientShadowColor="@color/white"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
 
             <!-- Fecha final -->
             <com.google.android.material.card.MaterialCardView
@@ -147,7 +213,8 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:textColorHint="@color/white">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etFechaFinal"
@@ -155,35 +222,15 @@
                         android:focusable="false"
                         android:clickable="true"
                         android:fontFamily="@font/urbanist_semibold"
+                        android:textColor="@color/white"
                         android:textSize="16sp"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/fondo1"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
 
-
-            <!-- Producto: selección según tienda -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="8dp">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp">
-
-                    <AutoCompleteTextView
-                        android:id="@+id/etProdNombre"
-                        android:hint="Selecciona producto"
-                        android:fontFamily="@font/urbanist_semibold"
-                        android:textSize="16sp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-                </com.google.android.material.textfield.TextInputLayout>
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- Precio del producto -->
             <com.google.android.material.card.MaterialCardView
@@ -195,16 +242,19 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:textColorHint="@color/white">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etProdPrecio"
                         android:hint="Precio del producto"
                         android:inputType="numberDecimal"
                         android:fontFamily="@font/urbanist_semibold"
+                        android:textColor="@color/white"
                         android:textSize="16sp"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/fondo1"/>
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -217,10 +267,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="Guardar oferta"
-                android:textAllCaps="false"
+                style="@style/BtnRed"
                 android:fontFamily="@font/urbanist_extrabold"
                 android:textColor="@android:color/white"
-                android:backgroundTint="@color/verdeclaro"
                 app:cornerRadius="12dp"
                 app:icon="@drawable/ic_guardar"
                 app:iconTint="@android:color/white"
