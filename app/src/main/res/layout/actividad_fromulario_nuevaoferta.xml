@@ -141,8 +141,8 @@
                         android:textColor="@color/white"
                         android:completionThreshold="1"
                         android:fontFamily="@font/urbanist_semibold"
-                        android:inputType="none"
                         android:paddingStart="12dp"
+                        android:spinnerMode="dropdown"
                         android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -190,12 +190,13 @@
                         android:textSize="14sp"
                         android:fontFamily="@font/urbanist_semibold"/>
 
-                    <Spinner
+                    <AutoCompleteTextView
                         android:id="@+id/spinnerProductos"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:spinnerMode="dropdown"
                         android:paddingHorizontal="12dp"
+                        android:textColor="@color/white"
                         android:background="@drawable/fondo1"
                         android:dropDownVerticalOffset="8dp"
                         android:outlineAmbientShadowColor="@color/white"/>

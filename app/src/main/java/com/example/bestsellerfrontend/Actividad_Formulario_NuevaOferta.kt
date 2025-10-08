@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -42,19 +43,17 @@ class FormularioNuevaOfertaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // --- Configurar Retrofit ---
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // --- Referencias de vistas ---
         val etDescripcion = view.findViewById<TextInputEditText>(R.id.etDescripcion)
         val etFechaFinal = view.findViewById<TextInputEditText>(R.id.etFechaFinal)
-        val spinnerProductos = view.findViewById<Spinner>(R.id.spinnerProductos)
+        val autoProducto = view.findViewById<MaterialAutoCompleteTextView>(R.id.spinnerProductos)
         val etProdPrecio = view.findViewById<TextInputEditText>(R.id.etProdPrecio)
-        val actvTienda = view.findViewById<AutoCompleteTextView>(R.id.actvTienda)
+        val autoTienda = view.findViewById<MaterialAutoCompleteTextView>(R.id.actvTienda)
         val btnGuardar = view.findViewById<Button>(R.id.btnGuardarOferta)
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
         val etNombreOferta = view.findViewById<TextInputEditText>(R.id.etNombreOferta)
@@ -64,7 +63,11 @@ class FormularioNuevaOfertaFragment : Fragment() {
             try {
                 tiendas = apiService.listarTiendas()
                 if (tiendas.isEmpty()) {
-                    Toast.makeText(requireContext(), "No se encontraron tiendas", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "No se encontraron tiendas",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@launch
                 }
 
@@ -74,28 +77,36 @@ class FormularioNuevaOfertaFragment : Fragment() {
                     tiendas.map { it.nombre }
                 )
 
-                actvTienda.setAdapter(adapterTiendas)
-                actvTienda.setOnClickListener { actvTienda.showDropDown() }
+                autoTienda.setAdapter(adapterTiendas)
+                autoTienda.setOnClickListener { autoTienda.showDropDown() }
 
-                actvTienda.setOnItemClickListener { _, _, position, _ ->
+                autoTienda.setOnItemClickListener { _, _, position, _ ->
                     tiendaSeleccionada = tiendas[position]
                     val tiendaId = tiendaSeleccionada?.id
                     if (tiendaId.isNullOrEmpty()) {
-                        Toast.makeText(requireContext(), "La tienda seleccionada no tiene ID válido", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "La tienda seleccionada no tiene ID válido",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         return@setOnItemClickListener
                     }
 
-                    Log.d("FormularioNuevaOferta", "Tienda seleccionada: ${tiendaSeleccionada?.nombre}, id=$tiendaId")
-                    cargarProductosPorTienda(tiendaId, spinnerProductos, etNombreOferta)
+                    Log.d(
+                        "FormularioNuevaOferta",
+                        "Tienda seleccionada: ${tiendaSeleccionada?.nombre}, id=$tiendaId"
+                    )
+                    cargarProductosPorTienda(tiendaId, autoProducto, etNombreOferta)
                 }
 
             } catch (e: Exception) {
                 Log.e("FormularioNuevaOferta", "Error cargando tiendas: ${e.message}", e)
-                Toast.makeText(requireContext(), "Error cargando tiendas", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Error cargando tiendas", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
-        // --- RecyclerView de categorías ---
+        // --- Categorías ---
         recyclerViewCategorias = view.findViewById(R.id.recyclerViewCategorias)
         recyclerViewCategorias.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -103,13 +114,19 @@ class FormularioNuevaOfertaFragment : Fragment() {
         val categorias: List<Pair<Int, String>> = listOf(
             Pair(R.drawable.bebida, "Bebidas"),
             Pair(R.drawable.enlatados, "Enlatados"),
-            Pair(R.drawable.granos, "Granos"),
-            Pair(R.drawable.precodidos, "Snacks"),
-            Pair(R.drawable.granos, "Lácteos"),
-            Pair(R.drawable.dulces, "Carnes")
+            Pair(R.drawable.granos, "Granos y Cereales"),
+            Pair(R.drawable.precodidos, "Precocidos"),
+            Pair(R.drawable.dulces, "Dulces"),
+            Pair(R.drawable.pastasyharinas, "Pastas y Harinas")
         )
 
-        adapterCategorias = CategoriaAdaptador(categorias)
+        adapterCategorias = CategoriaAdaptador(
+            categorias,
+            onCategoriaClick = { categoriaSeleccionada ->
+                filtrarProductosPorCategoria(categoriaSeleccionada, autoProducto, etNombreOferta)
+            },
+            clicHabilitado = true
+        )
         recyclerViewCategorias.adapter = adapterCategorias
 
         // --- Fecha final ---
@@ -139,7 +156,8 @@ class FormularioNuevaOfertaFragment : Fragment() {
             if (precio == null) camposFaltantes.add("Precio")
 
             if (camposFaltantes.isNotEmpty()) {
-                val mensaje = "Completa los siguientes campos: ${camposFaltantes.joinToString(", ")}"
+                val mensaje =
+                    "Completa los siguientes campos: ${camposFaltantes.joinToString(", ")}"
                 Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -160,25 +178,28 @@ class FormularioNuevaOfertaFragment : Fragment() {
                 ubicacion = tiendaSeleccionada!!.ubicacion
             )
 
-            val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+            val prefs = requireContext().getSharedPreferences(
+                "usuarioPrefs",
+                AppCompatActivity.MODE_PRIVATE
+            )
             val usuarioId = prefs.getString("id", null)
             if (usuarioId == null) {
-                Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
-            // --- Llamada al backend ---
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     val respuesta = apiService.crearOferta(usuarioId, nuevaOferta)
                     Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
                     requireActivity().onBackPressedDispatcher.onBackPressed()
 
-                    // Actualizar precio en Firebase
                     productoSeleccionado?.id?.let { productoId ->
-                        val productoRef = com.google.firebase.database.FirebaseDatabase.getInstance()
-                            .getReference("productos")
-                            .child(productoId)
+                        val productoRef =
+                            com.google.firebase.database.FirebaseDatabase.getInstance()
+                                .getReference("productos")
+                                .child(productoId)
                         val updates = mapOf<String, Any>(
                             "precio" to precio!!,
                             "precioHasta" to fechaFinalMillis
@@ -187,7 +208,8 @@ class FormularioNuevaOfertaFragment : Fragment() {
                     }
 
                 } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG)
+                        .show()
                 }
             }
         }
@@ -195,49 +217,63 @@ class FormularioNuevaOfertaFragment : Fragment() {
         btnRegresar.setOnClickListener { parentFragmentManager.popBackStack() }
     }
 
-    // --- Cargar productos según tienda ---
+    // --- Cargar productos ---
     private fun cargarProductosPorTienda(
         tiendaId: String,
-        spinnerProductos: Spinner,
+        autoProducto: MaterialAutoCompleteTextView,
         etNombreOferta: TextInputEditText
     ) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 productos = apiService.listarProductosTienda(tiendaId)
-                val nombresProductos = productos.map { it.nombre }
-                Log.d("FormularioNuevaOferta", "Productos cargados: $nombresProductos")
-
-                val adapterProductos = ArrayAdapter(
-                    requireContext(),
-                    android.R.layout.simple_spinner_item,
-                    nombresProductos
-                ).also {
-                    it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                }
-
-                spinnerProductos.adapter = adapterProductos
-
-                spinnerProductos.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        productoSeleccionado = productos[position]
-                        val productoNombre = productoSeleccionado?.nombre ?: ""
-                        etNombreOferta.setText("Oferta en $productoNombre")
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        productoSeleccionado = null
-                    }
-                }
-
+                actualizarAutoCompleteProductos(productos, autoProducto, etNombreOferta)
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Error cargando productos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Error cargando productos", Toast.LENGTH_SHORT)
+                    .show()
             }
+        }
+    }
+
+    // --- Filtrar productos por categoría ---
+    private fun filtrarProductosPorCategoria(
+        categoria: String,
+        autoProducto: MaterialAutoCompleteTextView,
+        etNombreOferta: TextInputEditText
+    ) {
+        val filtrados = productos.filter {
+            it.marca.categoria.trim().equals(categoria.trim(), ignoreCase = true)
+        }
+
+        if (filtrados.isEmpty()) {
+            Toast.makeText(requireContext(), "No hay productos en '$categoria'", Toast.LENGTH_SHORT)
+                .show()
+            autoProducto.setAdapter(null)
+            return
+        }
+
+        actualizarAutoCompleteProductos(filtrados, autoProducto, etNombreOferta)
+    }
+
+    // --- Adaptador para productos con autocompletado ---
+    private fun actualizarAutoCompleteProductos(
+        listaProductos: List<Producto>,
+        autoProducto: MaterialAutoCompleteTextView,
+        etNombreOferta: TextInputEditText
+    ) {
+        val nombresProductos = listaProductos.map { it.nombre }
+
+        val adapterProductos = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            nombresProductos
+        )
+        autoProducto.setAdapter(adapterProductos)
+        autoProducto.setOnClickListener { autoProducto.showDropDown() }
+
+        autoProducto.setOnItemClickListener { _, _, position, _ ->
+            productoSeleccionado = listaProductos[position]
+            etNombreOferta.setText("Oferta en ${productoSeleccionado?.nombre}")
         }
     }
 }

@@ -97,10 +97,15 @@ class InicioUsuarioFragment : Fragment() {
             Pair(R.drawable.granos, "Granos"),
             Pair(R.drawable.precodidos, "Snacks"),
             Pair(R.drawable.granos, "Lácteos"),
-            Pair(R.drawable.dulces, "Carnes")
+            Pair(R.drawable.dulces, "Dulces")
         )
 
-        adapterCategorias = CategoriaAdaptador(categorias)
+        adapterCategorias = CategoriaAdaptador(
+            categorias,
+            onCategoriaClick = { /* No hace nada */ },
+            clicHabilitado = false // 🔹 deshabilita clics
+        )
+
         recyclerViewCategorias.adapter = adapterCategorias
 
         // --- RecyclerView de Tiendas Cercanas ---

@@ -42,6 +42,8 @@ class OfertaAdaptador(
         val btnEliminar: Button? = itemView.findViewById(R.id.btnEliminar)
         val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
         val userName: TextView = itemView.findViewById(R.id.userName)
+        val imagenProducto: ImageView = itemView.findViewById(R.id.imagenOferta)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OfertaViewHolder {
@@ -59,8 +61,6 @@ class OfertaAdaptador(
         val fecha = Date(oferta.fechaOferta)
         val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         holder.textFecha.text = formato.format(fecha)
-
-
 
         if (!oferta.usuarioId.isNullOrEmpty()) {
             val ref = FirebaseDatabase.getInstance()
@@ -183,6 +183,31 @@ class OfertaAdaptador(
                 Toast.makeText(context, "Esta oferta no tiene ubicación registrada", Toast.LENGTH_SHORT).show()
             }
         }
+
+        // --- Cargar imagen del producto ---
+        if (!oferta.productoId.isNullOrEmpty()) {
+            val refProducto = FirebaseDatabase.getInstance()
+                .getReference("productos")
+                .child(oferta.productoId!!)
+
+            refProducto.get().addOnSuccessListener { snapshot ->
+                val urlImagen = snapshot.child("urlImagen").getValue(String::class.java)
+                if (!urlImagen.isNullOrEmpty()) {
+                    Glide.with(holder.itemView.context)
+                        .load(urlImagen)
+                        .placeholder(R.drawable.producto)
+                        .error(R.drawable.producto)
+                        .into(holder.imagenProducto)
+                } else {
+                    holder.imagenProducto.setImageResource(R.drawable.producto)
+                }
+            }.addOnFailureListener {
+                holder.imagenProducto.setImageResource(R.drawable.producto)
+            }
+        } else {
+            holder.imagenProducto.setImageResource(R.drawable.producto)
+        }
+
     }
 
     override fun getItemCount(): Int = listaOfertas.size

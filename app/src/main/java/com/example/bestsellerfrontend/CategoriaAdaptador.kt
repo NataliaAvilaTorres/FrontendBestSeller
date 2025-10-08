@@ -7,10 +7,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-
 class CategoriaAdaptador(
-    private val categorias: List<Pair<Int, String>>
+    private val categorias: List<Pair<Int, String>>,
+    private val onCategoriaClick: (String) -> Unit,
+    private val clicHabilitado: Boolean = true // 🔹 parámetro para activar o desactivar clics
 ) : RecyclerView.Adapter<CategoriaAdaptador.CategoriaViewHolder>() {
+
+    private var categoriaSeleccionada: String? = null
 
     inner class CategoriaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val icono: ImageView = itemView.findViewById(R.id.iconoCategoria)
@@ -24,9 +27,25 @@ class CategoriaAdaptador(
     }
 
     override fun onBindViewHolder(holder: CategoriaViewHolder, position: Int) {
-        val (iconRes, nombre) = categorias[position]
+        val (iconRes, nombreCategoria) = categorias[position]
         holder.icono.setImageResource(iconRes)
-        holder.nombre.text = nombre
+        holder.nombre.text = nombreCategoria
+
+        if (!clicHabilitado) {
+            holder.itemView.alpha = 1f
+        } else {
+            holder.itemView.alpha = if (categoriaSeleccionada == nombreCategoria) 1f else 0.5f
+        }
+
+        if (clicHabilitado) {
+            holder.itemView.setOnClickListener {
+                categoriaSeleccionada = nombreCategoria
+                notifyDataSetChanged()
+                onCategoriaClick(nombreCategoria)
+            }
+        } else {
+            holder.itemView.setOnClickListener(null)
+        }
     }
 
     override fun getItemCount(): Int = categorias.size

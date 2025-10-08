@@ -35,32 +35,36 @@ class DetalleProductoFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.actividad_vista_detalles_producto, container, false)
 
-        // UI
+        // --- Inicialización UI ---
         productName = view.findViewById(R.id.productName)
         productCategory = view.findViewById(R.id.productCategory)
         productImage = view.findViewById(R.id.productImage)
         chipPrecio = view.findViewById(R.id.productPrice)
         chipTienda = view.findViewById(R.id.productStore)
         chipLikes = view.findViewById(R.id.productlikes)
-
         recyclerViewSimilares = view.findViewById(R.id.recyclerSimilares)
+
         recyclerViewSimilares.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
+        // --- Retrofit API ---
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/")
+            .baseUrl("http://10.0.2.2:8090/") // Cambia si usas red local
             //.baseUrl("http://192.168.0.7:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
+        // --- Adaptador ---
         adapter = OfertaAdaptador(emptyList(), requireContext(), apiService)
         recyclerViewSimilares.adapter = adapter
 
+        // --- Botón regresar ---
         view.findViewById<ImageView>(R.id.btnRegresar).setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
+        // --- Obtener datos del producto del bundle ---
         val productoNombre = arguments?.getString("producto_nombre") ?: ""
         val productoCategoria = arguments?.getString("producto_categoria") ?: ""
         val productoPrecio = arguments?.getDouble("producto_precio") ?: 0.0
@@ -68,21 +72,48 @@ class DetalleProductoFragment : Fragment() {
         val ofertaTienda = arguments?.getString("oferta_tienda") ?: "Desconocida"
         val ofertaLikes = arguments?.getInt("oferta_likes") ?: 0
 
-        // Actualizar UI
+        // --- Actualizar UI con datos del producto ---
         productName.text = productoNombre
         productCategory.text = productoCategoria
         chipPrecio.text = "$ ${"%,.0f".format(productoPrecio)}"
         chipTienda.text = ofertaTienda
         chipLikes.text = ofertaLikes.toString()
 
-        // Carga la imagen del producto con Glide
+        // --- Cargar imagen del producto ---
         if (productoImagen.isNotEmpty()) {
             Glide.with(this)
                 .load(productoImagen)
                 .into(productImage)
         }
 
+        // --- Cargar ofertas similares ---
+        lifecycleScope.launch {
+            try {
+                val todasLasOfertas = apiService.listarOfertas()
+                val todosLosProductos = apiService.listarProductos()
 
+                // Combinar oferta con su producto
+                val ofertasConProducto = todasLasOfertas.mapNotNull { oferta ->
+                    val producto = todosLosProductos.find { it.id == oferta.productoId }
+                    producto?.let { Pair(oferta, producto) }
+                }
+
+                // Filtrar por categoría
+                val ofertasFiltradas = ofertasConProducto.filter { (_, producto) ->
+                    producto.marca.categoria.equals(productoCategoria, ignoreCase = true) &&
+                            producto.nombre != productoNombre
+                }.map { (oferta, _) -> oferta }
+
+                ofertasSimilares = ofertasFiltradas
+                adapter.actualizarLista(ofertasFiltradas)
+
+                recyclerViewSimilares.visibility =
+                    if (ofertasFiltradas.isEmpty()) View.GONE else View.VISIBLE
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
 
         return view
     }

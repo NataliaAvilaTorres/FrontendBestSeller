@@ -66,10 +66,6 @@ class ListaOfertasFragment : Fragment() {
             }
         }
 
-        // ==========================
-        // Spinners con estilos bonitos
-        // ==========================
-
         val spinnerOrdenAZ = view.findViewById<android.widget.Spinner>(R.id.spinnerOrdenAZ)
         val opcionesAZ = listOf("A-Z", "Z-A")
         val adapterAZ = ArrayAdapter(requireContext(), R.layout.spinner_item, opcionesAZ)
@@ -89,7 +85,6 @@ class ListaOfertasFragment : Fragment() {
         spinnerLikes.adapter = adapterLikes
 
 
-
         spinnerOrdenAZ.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {
                 if (ofertas.isNotEmpty()) {
@@ -104,7 +99,6 @@ class ListaOfertasFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
-
 
 
         spinnerLikes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
