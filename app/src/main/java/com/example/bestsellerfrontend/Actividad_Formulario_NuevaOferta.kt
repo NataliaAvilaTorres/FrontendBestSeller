@@ -114,8 +114,8 @@ class FormularioNuevaOfertaFragment : Fragment() {
         val categorias: List<Pair<Int, String>> = listOf(
             Pair(R.drawable.bebida, "Bebidas"),
             Pair(R.drawable.enlatados, "Enlatados"),
-            Pair(R.drawable.granos, "Granos y Cereales"),
-            Pair(R.drawable.precodidos, "Precocidos"),
+            Pair(R.drawable.granos, "Granos"),
+            Pair(R.drawable.precodidos, "Instantáneos"),
             Pair(R.drawable.dulces, "Dulces"),
             Pair(R.drawable.pastasyharinas, "Pastas y Harinas")
         )

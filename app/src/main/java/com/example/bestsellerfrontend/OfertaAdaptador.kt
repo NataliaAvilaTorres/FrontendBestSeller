@@ -186,12 +186,20 @@ class OfertaAdaptador(
 
         // --- Cargar imagen del producto ---
         if (!oferta.productoId.isNullOrEmpty()) {
-            val refProducto = FirebaseDatabase.getInstance()
-                .getReference("productos")
-                .child(oferta.productoId!!)
+            val refProductos = FirebaseDatabase.getInstance().getReference("productos")
 
-            refProducto.get().addOnSuccessListener { snapshot ->
-                val urlImagen = snapshot.child("urlImagen").getValue(String::class.java)
+            refProductos.get().addOnSuccessListener { snapshot ->
+                var urlImagen: String? = null
+
+                // Recorre todas las tiendas hasta encontrar el producto
+                for (tiendaSnapshot in snapshot.children) {
+                    val productoSnapshot = tiendaSnapshot.child(oferta.productoId!!)
+                    if (productoSnapshot.exists()) {
+                        urlImagen = productoSnapshot.child("urlImagen").getValue(String::class.java)
+                        break
+                    }
+                }
+
                 if (!urlImagen.isNullOrEmpty()) {
                     Glide.with(holder.itemView.context)
                         .load(urlImagen)
@@ -204,8 +212,6 @@ class OfertaAdaptador(
             }.addOnFailureListener {
                 holder.imagenProducto.setImageResource(R.drawable.producto)
             }
-        } else {
-            holder.imagenProducto.setImageResource(R.drawable.producto)
         }
 
     }
