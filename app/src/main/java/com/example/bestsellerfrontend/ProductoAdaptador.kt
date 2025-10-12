@@ -32,8 +32,12 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
         holder.textCategoria.text = producto.marca?.categoria ?: "Sin categoría"
         holder.textPrecio.text = "$${producto.precio}"
 
+        // Cargar imagen del producto o por defecto si no existe
+        val imagenUrl = producto.urlImagen
         Glide.with(holder.itemView.context)
-            .load(producto.urlImagen)
+            .load(if (!imagenUrl.isNullOrEmpty()) imagenUrl else R.drawable.producto)
+            .placeholder(R.drawable.producto)
+            .error(R.drawable.producto)
             .into(holder.imageProducto)
 
         holder.itemView.setOnClickListener {
@@ -45,7 +49,6 @@ class ProductoAdaptador(private var listaProductos: List<Producto>) :
                     putString("producto_categoria", producto.marca?.categoria ?: "")
                     putDouble("producto_precio", producto.precio)
                     putString("producto_imagen", producto.urlImagen)
-                    //putString("producto_tiendaId", producto.)
                 }
 
                 context.supportFragmentManager.beginTransaction()

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="110dp"
+    android:layout_height="110dp"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_margin="8dp"
+    android:background="@drawable/bg_categoria"
+    android:padding="10dp">
+
+    <ImageView
+        android:id="@+id/imgCategoria"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:tint="@color/yellow"
+        android:src="@drawable/img"
+        android:contentDescription="Icono categoría" />
+
+    <TextView
+        android:id="@+id/txtCategoria"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/yellow"
+        android:textSize="12sp"
+        android:fontFamily="@font/rubik_extra_bold"
+        android:text="Bebidas" />
+</LinearLayout>

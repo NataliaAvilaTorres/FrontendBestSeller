@@ -10,19 +10,19 @@ import androidx.recyclerview.widget.RecyclerView
 class CategoriaAdaptador(
     private val categorias: List<Pair<Int, String>>,
     private val onCategoriaClick: (String) -> Unit,
-    private val clicHabilitado: Boolean = true // 🔹 parámetro para activar o desactivar clics
+    private val clicHabilitado: Boolean = true, // activar o desactivar clics
+    private val layoutId: Int = R.layout.item_categoria // usa tu layout correcto
 ) : RecyclerView.Adapter<CategoriaAdaptador.CategoriaViewHolder>() {
 
     private var categoriaSeleccionada: String? = null
 
     inner class CategoriaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val icono: ImageView = itemView.findViewById(R.id.iconoCategoria)
-        val nombre: TextView = itemView.findViewById(R.id.nombreCategoria)
+        val icono: ImageView = itemView.findViewById(R.id.imgCategoria)
+        val nombre: TextView = itemView.findViewById(R.id.txtCategoria)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoriaViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.actividad_categoria, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(layoutId, parent, false)
         return CategoriaViewHolder(view)
     }
 

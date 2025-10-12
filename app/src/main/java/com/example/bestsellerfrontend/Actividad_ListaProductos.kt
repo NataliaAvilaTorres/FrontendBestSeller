@@ -4,9 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,14 +15,30 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import android.widget.ImageView
 
 class ListaProductosFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: ProductoAdaptador
+    private lateinit var recyclerViewProductos: RecyclerView
+    private lateinit var recyclerViewCategorias: RecyclerView
+    private lateinit var recyclerViewTiendas: RecyclerView
+    private lateinit var adapterProductos: ProductoAdaptador
+    private lateinit var adapterCategorias: CategoriaAdaptador
+    private lateinit var adapterTiendas: TiendaAdaptador
     private lateinit var apiService: ApiService
-    private var ofertas: List<Producto> = emptyList()  // lista de ofertas ahora
+    private lateinit var searchViewTiendas: SearchView
+    private lateinit var searchViewProductos: SearchView
+    private lateinit var textViewCoincidencias: TextView
+    private lateinit var btnOrdenAsc: ImageView
+    private lateinit var btnOrdenDesc: ImageView
+
+    private var productos: List<Producto> = emptyList()
+    private var listaCompletaTiendas: List<Tienda> = emptyList()
+
+    // Variables para filtros combinados
+    private var categoriaSeleccionada: String? = null
+    private var tiendaSeleccionadaId: String? = null
+    private var textoBusquedaProducto: String? = null
+    private var ordenAscendente: Boolean? = null // null = sin ordenar, true = asc, false = desc
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,100 +47,177 @@ class ListaProductosFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_lista_productos, container, false)
 
-        // --- BOTÓN REGRESAR ---
+        // --- Botón regresar ---
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
         btnRegresar.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // --- BOTÓN CATEGORÍAS ---
-        val btnCategoria = view.findViewById<Button>(R.id.btnCategoria)
-        btnCategoria.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.contenedor, VistaCategoriasFragment())
-                .addToBackStack(null)
-                .commit()
+        // --- RecyclerView Categorías ---
+        recyclerViewCategorias = view.findViewById(R.id.recyclerViewCategorias2)
+        recyclerViewCategorias.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        val categorias = listOf(
+            Pair(R.drawable.bebida, "Bebidas"),
+            Pair(R.drawable.enlatados, "Enlatados"),
+            Pair(R.drawable.granos, "Granos"),
+            Pair(R.drawable.precodidos, "Instantáneos"),
+            Pair(R.drawable.dulces, "Dulces"),
+            Pair(R.drawable.pastasyharinas, "Pastas y Harinas")
+        )
+
+        adapterCategorias = CategoriaAdaptador(
+            categorias,
+            onCategoriaClick = { categoria ->
+                categoriaSeleccionada = categoria
+                aplicarFiltros()
+            },
+            clicHabilitado = true,
+            layoutId = R.layout.item_categoria
+        )
+        recyclerViewCategorias.adapter = adapterCategorias
+
+        // --- RecyclerView Tiendas ---
+        recyclerViewTiendas = view.findViewById(R.id.recyclerViewTiendas)
+        recyclerViewTiendas.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        adapterTiendas = TiendaAdaptador(
+            listaTiendas = emptyList(),
+            context = requireContext(),
+            layoutId = R.layout.item_tienda,
+            onTiendaClick = { tienda ->
+                tiendaSeleccionadaId = tienda.id
+                Toast.makeText(requireContext(), "Seleccionaste ${tienda.nombre}", Toast.LENGTH_SHORT).show()
+                aplicarFiltros()
+            }
+        )
+        recyclerViewTiendas.adapter = adapterTiendas
+
+        // --- SearchView para tiendas ---
+        searchViewTiendas = view.findViewById(R.id.searchviewTiendas)
+        searchViewTiendas.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                filtrarTiendas(query)
+                return true
+            }
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filtrarTiendas(newText)
+                return true
+            }
+        })
+
+        // --- SearchView para productos ---
+        searchViewProductos = view.findViewById(R.id.searchview)
+        searchViewProductos.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                textoBusquedaProducto = query
+                aplicarFiltros()
+                return true
+            }
+            override fun onQueryTextChange(newText: String?): Boolean {
+                textoBusquedaProducto = newText
+                aplicarFiltros()
+                return true
+            }
+        })
+
+        // --- Coincidencias y botones de ordenamiento ---
+        textViewCoincidencias = view.findViewById(R.id.textViewCoincidencias)
+        btnOrdenAsc = view.findViewById(R.id.btnOrdenAsc)
+        btnOrdenDesc = view.findViewById(R.id.btnOrdenDesc)
+
+        btnOrdenAsc.setOnClickListener {
+            ordenAscendente = true
+            aplicarFiltros()
         }
 
-        recyclerView = view.findViewById(R.id.recyclerViewProductos)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = ProductoAdaptador(emptyList())
-        recyclerView.adapter = adapter
+        btnOrdenDesc.setOnClickListener {
+            ordenAscendente = false
+            aplicarFiltros()
+        }
 
+        // --- Retrofit ---
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
-            //.baseUrl("http://192.168.0.7:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        val categoriaFiltro = arguments?.getString("categoria_filtro")
-
-        // --- CARGA DE DATOS ---
+        // --- Cargar Tiendas desde API ---
         lifecycleScope.launch {
             try {
-                ofertas = apiService.listarProductos()
+                val tiendas = apiService.listarTiendas()
+                listaCompletaTiendas = tiendas
+                adapterTiendas.actualizarLista(tiendas)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Error al cargar tiendas", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-                val listaFiltrada = if (categoriaFiltro != null) {
-                    ofertas.filter { it.marca.categoria.equals(categoriaFiltro, ignoreCase = true) }
-                } else {
-                    ofertas
-                }
+        // --- RecyclerView Productos ---
+        recyclerViewProductos = view.findViewById(R.id.recyclerViewProductos)
+        recyclerViewProductos.layoutManager = LinearLayoutManager(requireContext())
+        adapterProductos = ProductoAdaptador(emptyList())
+        recyclerViewProductos.adapter = adapterProductos
 
+        cargarProductos()
 
-                adapter.actualizarLista(listaFiltrada)
-                ofertas = listaFiltrada
+        return view
+    }
 
+    private fun cargarProductos() {
+        lifecycleScope.launch {
+            try {
+                productos = apiService.listarProductos()
+                aplicarFiltros() // muestra todos al inicio
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+    }
 
+    private fun aplicarFiltros() {
+        var productosFiltrados = productos
 
-        // Spinner A-Z
-        val spinnerOrdenAZ = view.findViewById<android.widget.Spinner>(R.id.spinnerOrdenAZ)
-        val opcionesAZ = listOf("A-Z", "Z-A")
-        val adapterAZ = ArrayAdapter(requireContext(), R.layout.spinner_item, opcionesAZ)
-        adapterAZ.setDropDownViewResource(R.layout.spinner_dropdown_item)
-        spinnerOrdenAZ.adapter = adapterAZ
-
-        // Spinner Precio
-        val spinnerPrecio = view.findViewById<android.widget.Spinner>(R.id.spinnerPrecio)
-        val opcionesPrecio = listOf("Menor a mayor", "Mayor a menor")
-        val adapterPrecio = ArrayAdapter(requireContext(), R.layout.spinner_item, opcionesPrecio)
-        adapterPrecio.setDropDownViewResource(R.layout.spinner_dropdown_item)
-        spinnerPrecio.adapter = adapterPrecio
-
-        // Listener del Spinner A-Z
-        spinnerOrdenAZ.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (ofertas.isNotEmpty()) {
-                    val listaOrdenada = when (position) {
-                        0 -> ofertas.sortedBy { it.nombre }
-                        1 -> ofertas.sortedByDescending { it.nombre }
-                        else -> ofertas
-                    }
-                    adapter.actualizarLista(listaOrdenada)
-                }
+        categoriaSeleccionada?.let { categoria ->
+            productosFiltrados = productosFiltrados.filter {
+                it.marca.categoria.equals(categoria, ignoreCase = true)
             }
-            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // Listener del Spinner Precio
-        spinnerPrecio.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (ofertas.isNotEmpty()) {
-                    val listaOrdenada = when (position) {
-                        0 -> ofertas.sortedBy { it.precio }
-                        1 -> ofertas.sortedByDescending { it.precio }
-                        else -> ofertas
-                    }
-                    adapter.actualizarLista(listaOrdenada)
-                }
+        tiendaSeleccionadaId?.let { idTienda ->
+            productosFiltrados = productosFiltrados.filter {
+                it.tiendaId == idTienda
             }
-            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        return view
+        textoBusquedaProducto?.let { texto ->
+            val busqueda = texto.lowercase()
+            productosFiltrados = productosFiltrados.filter {
+                it.nombre.lowercase().contains(busqueda)
+            }
+        }
+
+        // Ordenamiento por precio
+        ordenAscendente?.let { asc ->
+            productosFiltrados = if (asc) {
+                productosFiltrados.sortedBy { it.precio }
+            } else {
+                productosFiltrados.sortedByDescending { it.precio }
+            }
+        }
+
+        adapterProductos.actualizarLista(productosFiltrados)
+    }
+
+    private fun filtrarTiendas(query: String?) {
+        val texto = query?.lowercase() ?: ""
+        val filtradas = listaCompletaTiendas.filter {
+            it.nombre.lowercase().contains(texto)
+        }
+        adapterTiendas.actualizarLista(filtradas)
     }
 }

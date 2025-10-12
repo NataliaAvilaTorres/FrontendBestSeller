@@ -6,5 +6,6 @@ data class Producto(
     val marca: Marca,
     val precio: Double,
     val urlImagen: String,
+    val tiendaId: String,
     val usuarioId: String? = null
 )

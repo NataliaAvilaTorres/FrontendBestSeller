@@ -8,6 +8,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -95,9 +96,9 @@ class InicioUsuarioFragment : Fragment() {
             Pair(R.drawable.bebida, "Bebidas"),
             Pair(R.drawable.enlatados, "Enlatados"),
             Pair(R.drawable.granos, "Granos"),
-            Pair(R.drawable.precodidos, "Snacks"),
-            Pair(R.drawable.granos, "Lácteos"),
-            Pair(R.drawable.dulces, "Dulces")
+            Pair(R.drawable.precodidos, "Instantáneoa"),
+            Pair(R.drawable.dulces, "Dulces"),
+            Pair(R.drawable.pastasyharinas, "Lácteos")
         )
 
         adapterCategorias = CategoriaAdaptador(
@@ -108,14 +109,23 @@ class InicioUsuarioFragment : Fragment() {
 
         recyclerViewCategorias.adapter = adapterCategorias
 
-        // --- RecyclerView de Tiendas Cercanas ---
+// --- RecyclerView de Tiendas Cercanas ---
         recyclerViewTiendas = view.findViewById(R.id.recyclerViewTiendas)
         recyclerViewTiendas.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
-        adapterTiendas = TiendaAdaptador(emptyList(), requireContext())
-        recyclerViewTiendas.adapter = adapterTiendas
+// Usamos el layout original para esta actividad
+        adapterTiendas = TiendaAdaptador(
+            listaTiendas = emptyList(),
+            context = requireContext(),
+            layoutId = R.layout.actividad_vista_tienda, // ✅ importante
+            onTiendaClick = { tiendaSeleccionada ->
+                Toast.makeText(requireContext(), "Seleccionaste ${tiendaSeleccionada.nombre}", Toast.LENGTH_SHORT).show()
+                // Aquí puedes agregar acción adicional si quieres
+            }
+        )
 
+        recyclerViewTiendas.adapter = adapterTiendas
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
@@ -125,6 +135,7 @@ class InicioUsuarioFragment : Fragment() {
                 e.printStackTrace()
             }
         }
+
 
         // --- Botones ---
         val btnAdd: ImageButton = view.findViewById(R.id.btnAdd)
