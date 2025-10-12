@@ -34,7 +34,6 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
-
             <TextView
                 android:id="@+id/userName"
                 android:layout_width="wrap_content"
@@ -59,7 +58,6 @@
                 android:textColor="@android:color/darker_gray"
                 app:layout_constraintTop_toTopOf="@id/userName"
                 app:layout_constraintEnd_toEndOf="parent" />
-
 
             <ImageView
                 android:id="@+id/imagenOferta"
@@ -95,6 +93,31 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/imagenOferta" />
 
+            <!-- NUEVO: Precio NUEVO debajo de la descripción -->
+            <TextView
+                android:id="@+id/precioNuevo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="$ 0"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:fontFamily="@font/urbanist_bold"
+                app:layout_constraintTop_toBottomOf="@id/descripcionOferta"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/imagenOferta" />
+
+            <!-- NUEVO: Fecha HASTA debajo del precio nuevo -->
+            <TextView
+                android:id="@+id/fechaHasta"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Hasta 31 Dic 2025"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp"
+                android:fontFamily="@font/urbanist_regular"
+                app:layout_constraintTop_toBottomOf="@id/precioNuevo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/imagenOferta" />
 
             <TextView
                 android:id="@+id/ubicacion"
@@ -111,6 +134,21 @@
                 android:textStyle="bold"
                 app:layout_constraintTop_toBottomOf="@id/imagenOferta"
                 app:layout_constraintStart_toStartOf="parent" />
+
+            <!-- NUEVO: Precio ORIGINAL tachado entre ubicación y like -->
+            <TextView
+                android:id="@+id/precioOriginal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="$ 0"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="14sp"
+                android:fontFamily="@font/urbanist_regular"
+                android:layout_marginStart="12dp"
+                app:layout_constraintStart_toEndOf="@id/ubicacion"
+                app:layout_constraintTop_toTopOf="@id/btnLike"
+                app:layout_constraintBottom_toBottomOf="@id/btnLike"
+                app:layout_constraintEnd_toStartOf="@id/btnLike" />
 
             <TextView
                 android:id="@+id/tvLikeCount"
@@ -136,6 +174,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
+
     <LinearLayout
         android:id="@+id/layoutBotones"
         android:layout_width="match_parent"

@@ -27,6 +27,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
     private lateinit var adapterCategorias: CategoriaAdaptador
     private val cal = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
     private var tiendas: List<Tienda> = emptyList()
     private var tiendaSeleccionada: Tienda? = null
     private var productos: List<Producto> = emptyList()
@@ -49,25 +50,21 @@ class FormularioNuevaOfertaFragment : Fragment() {
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        val etDescripcion = view.findViewById<TextInputEditText>(R.id.etDescripcion)
-        val etFechaFinal = view.findViewById<TextInputEditText>(R.id.etFechaFinal)
-        val autoProducto = view.findViewById<MaterialAutoCompleteTextView>(R.id.spinnerProductos)
-        val etProdPrecio = view.findViewById<TextInputEditText>(R.id.etProdPrecio)
-        val autoTienda = view.findViewById<MaterialAutoCompleteTextView>(R.id.actvTienda)
-        val btnGuardar = view.findViewById<Button>(R.id.btnGuardarOferta)
-        val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
-        val etNombreOferta = view.findViewById<TextInputEditText>(R.id.etNombreOferta)
+        val etDescripcion   = view.findViewById<TextInputEditText>(R.id.etDescripcion)
+        val etFechaFinal    = view.findViewById<TextInputEditText>(R.id.etFechaFinal)
+        val autoProducto    = view.findViewById<MaterialAutoCompleteTextView>(R.id.spinnerProductos)
+        val etProdPrecio    = view.findViewById<TextInputEditText>(R.id.etProdPrecio)
+        val autoTienda      = view.findViewById<MaterialAutoCompleteTextView>(R.id.actvTienda)
+        val btnGuardar      = view.findViewById<Button>(R.id.btnGuardarOferta)
+        val btnRegresar     = view.findViewById<ImageView>(R.id.btnRegresar)
+        val etNombreOferta  = view.findViewById<TextInputEditText>(R.id.etNombreOferta)
 
         // --- Cargar tiendas ---
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 tiendas = apiService.listarTiendas()
                 if (tiendas.isEmpty()) {
-                    Toast.makeText(
-                        requireContext(),
-                        "No se encontraron tiendas",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "No se encontraron tiendas", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
 
@@ -79,30 +76,20 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
                 autoTienda.setAdapter(adapterTiendas)
                 autoTienda.setOnClickListener { autoTienda.showDropDown() }
-
                 autoTienda.setOnItemClickListener { _, _, position, _ ->
                     tiendaSeleccionada = tiendas[position]
                     val tiendaId = tiendaSeleccionada?.id
                     if (tiendaId.isNullOrEmpty()) {
-                        Toast.makeText(
-                            requireContext(),
-                            "La tienda seleccionada no tiene ID válido",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(requireContext(), "La tienda seleccionada no tiene ID válido", Toast.LENGTH_SHORT).show()
                         return@setOnItemClickListener
                     }
-
-                    Log.d(
-                        "FormularioNuevaOferta",
-                        "Tienda seleccionada: ${tiendaSeleccionada?.nombre}, id=$tiendaId"
-                    )
+                    Log.d("FormularioNuevaOferta", "Tienda seleccionada: ${tiendaSeleccionada?.nombre}, id=$tiendaId")
                     cargarProductosPorTienda(tiendaId, autoProducto, etNombreOferta)
                 }
 
             } catch (e: Exception) {
                 Log.e("FormularioNuevaOferta", "Error cargando tiendas: ${e.message}", e)
-                Toast.makeText(requireContext(), "Error cargando tiendas", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Error cargando tiendas", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -143,10 +130,10 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
         // --- Guardar oferta ---
         btnGuardar.setOnClickListener {
-            val descripcion = etDescripcion.text?.toString()?.trim().orEmpty()
+            val descripcion   = etDescripcion.text?.toString()?.trim().orEmpty()
             val fechaFinalStr = etFechaFinal.text?.toString()?.trim().orEmpty()
-            val precioStr = etProdPrecio.text?.toString()?.trim().orEmpty()
-            val precio = precioStr.toDoubleOrNull()
+            val precioStr     = etProdPrecio.text?.toString()?.trim().orEmpty()
+            val precio        = precioStr.toDoubleOrNull()
 
             val camposFaltantes = mutableListOf<String>()
             if (tiendaSeleccionada == null) camposFaltantes.add("Tienda")
@@ -156,60 +143,86 @@ class FormularioNuevaOfertaFragment : Fragment() {
             if (precio == null) camposFaltantes.add("Precio")
 
             if (camposFaltantes.isNotEmpty()) {
-                val mensaje =
-                    "Completa los siguientes campos: ${camposFaltantes.joinToString(", ")}"
-                Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    "Completa los siguientes campos: ${camposFaltantes.joinToString(", ")}",
+                    Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val fechaFinalMillis = try {
                 dateFormat.parse(fechaFinalStr)?.time ?: cal.timeInMillis
-            } catch (_: Exception) {
-                cal.timeInMillis
-            }
+            } catch (_: Exception) { cal.timeInMillis }
 
             val nuevaOferta = Oferta(
-                nombreOferta = etNombreOferta.text?.toString()?.trim().orEmpty(),
+                nombreOferta      = etNombreOferta.text?.toString()?.trim().orEmpty(),
                 descripcionOferta = descripcion,
-                tiendaId = tiendaSeleccionada!!.id,
-                fechaOferta = System.currentTimeMillis(),
-                fechaFinal = fechaFinalMillis,
-                productoId = productoSeleccionado!!.id,
-                ubicacion = tiendaSeleccionada!!.ubicacion
+                tiendaId          = tiendaSeleccionada!!.id,
+                fechaOferta       = System.currentTimeMillis(),
+                fechaFinal        = fechaFinalMillis,
+                productoId        = productoSeleccionado!!.id,
+                ubicacion         = tiendaSeleccionada!!.ubicacion
             )
 
-            val prefs = requireContext().getSharedPreferences(
-                "usuarioPrefs",
-                AppCompatActivity.MODE_PRIVATE
-            )
+            val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
             val usuarioId = prefs.getString("id", null)
             if (usuarioId == null) {
-                Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
+                    // 1) Crear oferta en backend
                     val respuesta = apiService.crearOferta(usuarioId, nuevaOferta)
                     Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
 
-                    productoSeleccionado?.id?.let { productoId ->
-                        val productoRef =
-                            com.google.firebase.database.FirebaseDatabase.getInstance()
-                                .getReference("productos")
-                                .child(productoId)
-                        val updates = mapOf<String, Any>(
-                            "precio" to precio!!,
-                            "precioHasta" to fechaFinalMillis
-                        )
-                        productoRef.updateChildren(updates)
+                    // 2) Editar producto EXISTENTE (sin crear nuevos)
+                    val tiendaId    = tiendaSeleccionada!!.id
+                    val productoId  = productoSeleccionado!!.id
+
+                    if (productoId.isNullOrEmpty()) {
+                        Toast.makeText(requireContext(), "Producto sin ID válido; no se actualizó", Toast.LENGTH_SHORT).show()
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                        return@launch
+                    }
+
+                    val dbRef = com.google.firebase.database.FirebaseDatabase.getInstance()
+                        .getReference("productos")
+                        .child(tiendaId)
+                        .child(productoId)
+
+                    // Primero verificamos si existe para NO crear huérfanos
+                    dbRef.get().addOnSuccessListener { snap ->
+                        if (snap.exists()) {
+                            val precioFinal: Double = precio!!
+                            val updates = mapOf<String, Any>(
+                                "precio" to precioFinal,
+                                // OJO: conservamos tu campo tal cual lo usabas:
+                                "precioHasta" to fechaFinalMillis
+                            )
+                            dbRef.updateChildren(updates).addOnCompleteListener { task ->
+                                if (!task.isSuccessful) {
+                                    Toast.makeText(requireContext(), "No se pudo actualizar el producto", Toast.LENGTH_SHORT).show()
+                                }
+                                // Volver atrás de todas formas
+                                requireActivity().onBackPressedDispatcher.onBackPressed()
+                            }
+                        } else {
+                            // No existe el nodo: NO creamos nada
+                            Toast.makeText(
+                                requireContext(),
+                                "El producto no existe en la tienda. No se creó ningún nodo.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                        }
+                    }.addOnFailureListener {
+                        Toast.makeText(requireContext(), "Error al verificar el producto", Toast.LENGTH_SHORT).show()
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
                     }
 
                 } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG)
-                        .show()
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -217,7 +230,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
         btnRegresar.setOnClickListener { parentFragmentManager.popBackStack() }
     }
 
-    // --- Cargar productos ---
+    // --- Cargar productos de la tienda seleccionada ---
     private fun cargarProductosPorTienda(
         tiendaId: String,
         autoProducto: MaterialAutoCompleteTextView,
@@ -229,8 +242,7 @@ class FormularioNuevaOfertaFragment : Fragment() {
                 actualizarAutoCompleteProductos(productos, autoProducto, etNombreOferta)
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Error cargando productos", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Error cargando productos", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -244,25 +256,21 @@ class FormularioNuevaOfertaFragment : Fragment() {
         val filtrados = productos.filter {
             it.marca.categoria.trim().equals(categoria.trim(), ignoreCase = true)
         }
-
         if (filtrados.isEmpty()) {
-            Toast.makeText(requireContext(), "No hay productos en '$categoria'", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(requireContext(), "No hay productos en '$categoria'", Toast.LENGTH_SHORT).show()
             autoProducto.setAdapter(null)
             return
         }
-
         actualizarAutoCompleteProductos(filtrados, autoProducto, etNombreOferta)
     }
 
-    // --- Adaptador para productos con autocompletado ---
+    // --- Adaptador del autocompletado de productos ---
     private fun actualizarAutoCompleteProductos(
         listaProductos: List<Producto>,
         autoProducto: MaterialAutoCompleteTextView,
         etNombreOferta: TextInputEditText
     ) {
         val nombresProductos = listaProductos.map { it.nombre }
-
         val adapterProductos = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_dropdown_item_1line,
@@ -270,7 +278,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
         )
         autoProducto.setAdapter(adapterProductos)
         autoProducto.setOnClickListener { autoProducto.showDropDown() }
-
         autoProducto.setOnItemClickListener { _, _, position, _ ->
             productoSeleccionado = listaProductos[position]
             etNombreOferta.setText("Oferta en ${productoSeleccionado?.nombre}")

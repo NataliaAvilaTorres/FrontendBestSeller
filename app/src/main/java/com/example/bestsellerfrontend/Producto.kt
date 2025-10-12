@@ -7,5 +7,6 @@ data class Producto(
     val precio: Double,
     val urlImagen: String,
     val tiendaId: String,
-    val usuarioId: String? = null
+    val usuarioId: String? = null,
+    val precioHasta: Double? = null
 )

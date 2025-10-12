@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -35,83 +36,109 @@ class DetalleProductoFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.actividad_vista_detalles_producto, container, false)
 
-        // --- Inicialización UI ---
-        productName = view.findViewById(R.id.productName)
+        // --- UI ---
+        productName   = view.findViewById(R.id.productName)
         productCategory = view.findViewById(R.id.productCategory)
-        productImage = view.findViewById(R.id.productImage)
-        chipPrecio = view.findViewById(R.id.productPrice)
-        chipTienda = view.findViewById(R.id.productStore)
-        chipLikes = view.findViewById(R.id.productlikes)
+        productImage  = view.findViewById(R.id.productImage)
+        chipPrecio    = view.findViewById(R.id.productPrice)
+        chipTienda    = view.findViewById(R.id.productStore)   // verifica ids en el XML
+        chipLikes     = view.findViewById(R.id.productlikes)    // verifica ids en el XML
         recyclerViewSimilares = view.findViewById(R.id.recyclerSimilares)
-
         recyclerViewSimilares.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
-        // --- Retrofit API ---
+        // --- Retrofit ---
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/") // Cambia si usas red local
-            //.baseUrl("http://192.168.0.7:8090/")
+            .baseUrl("http://10.0.2.2:8090/")  // host de tu PC desde el emulador
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // --- Adaptador ---
+        // --- Adapter ---
         adapter = OfertaAdaptador(emptyList(), requireContext(), apiService)
         recyclerViewSimilares.adapter = adapter
 
-        // --- Botón regresar ---
+        // --- Back ---
         view.findViewById<ImageView>(R.id.btnRegresar).setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // --- Obtener datos del producto del bundle ---
-        val productoNombre = arguments?.getString("producto_nombre") ?: ""
+        // --- Args del producto ---
+        val productoIdArg    = arguments?.getString("producto_id") // recomendado pasarlo
+        val productoNombre   = arguments?.getString("producto_nombre") ?: ""
         val productoCategoria = arguments?.getString("producto_categoria") ?: ""
-        val productoPrecio = arguments?.getDouble("producto_precio") ?: 0.0
-        val productoImagen = arguments?.getString("producto_imagen") ?: ""
-        val ofertaTienda = arguments?.getString("oferta_tienda") ?: "Desconocida"
-        val ofertaLikes = arguments?.getInt("oferta_likes") ?: 0
+        val productoPrecio   = arguments?.getDouble("producto_precio") ?: 0.0
+        val productoImagen   = arguments?.getString("producto_imagen") ?: ""
 
-        // --- Actualizar UI con datos del producto ---
+        // --- Pintar lo que ya tenemos ---
         productName.text = productoNombre
         productCategory.text = productoCategoria
         chipPrecio.text = "$ ${"%,.0f".format(productoPrecio)}"
-        chipTienda.text = ofertaTienda
-        chipLikes.text = ofertaLikes.toString()
-
-        // --- Cargar imagen del producto ---
         if (productoImagen.isNotEmpty()) {
-            Glide.with(this)
-                .load(productoImagen)
-                .into(productImage)
+            Glide.with(this).load(productoImagen).into(productImage)
         }
 
-        // --- Cargar ofertas similares ---
+        // --- Cargar datos faltantes (tienda y likes) + similares ---
         lifecycleScope.launch {
             try {
-                val todasLasOfertas = apiService.listarOfertas()
-                val todosLosProductos = apiService.listarProductos()
+                // Llamadas en paralelo
+                val ofertasDefer   = async { apiService.listarOfertas() }
+                val productosDefer = async { apiService.listarProductos() }
 
-                // Combinar oferta con su producto
-                val ofertasConProducto = todasLasOfertas.mapNotNull { oferta ->
-                    val producto = todosLosProductos.find { it.id == oferta.productoId }
-                    producto?.let { Pair(oferta, producto) }
+                val todasLasOfertas   = ofertasDefer.await()
+                val todosLosProductos = productosDefer.await()
+
+                // Resolver producto actual
+                val productoActual = when {
+                    !productoIdArg.isNullOrBlank() ->
+                        todosLosProductos.firstOrNull { it.id == productoIdArg }
+                    else ->
+                        todosLosProductos.firstOrNull { it.nombre.equals(productoNombre, true) }
                 }
 
-                // Filtrar por categoría
-                val ofertasFiltradas = ofertasConProducto.filter { (_, producto) ->
-                    producto.marca.categoria.equals(productoCategoria, ignoreCase = true) &&
-                            producto.nombre != productoNombre
-                }.map { (oferta, _) -> oferta }
+                // ---- Likes de la oferta del producto ----
+                val likes: Int = productoActual?.id?.let { pid ->
+                    val ahora = System.currentTimeMillis()
+                    val ofertasDelProducto = todasLasOfertas.filter { it.productoId == pid }
+                    val ofertaActiva = ofertasDelProducto.firstOrNull {
+                        it.fechaOferta <= ahora && ahora <= it.fechaFinal
+                    }
+                    val ofertaElegida = ofertaActiva ?: ofertasDelProducto.maxByOrNull { it.fechaOferta }
+                    ofertaElegida?.likes
+                } ?: 0
+                chipLikes.text = likes.toString()
+
+                // ---- Nombre de tienda por tiendaId ----
+                val tiendaNombre = productoActual?.tiendaId?.let { tid ->
+                    runCatching { apiService.obtenerTienda(tid).nombre }.getOrNull()
+                        ?: runCatching {
+                            apiService.listarTiendas().firstOrNull { it.id == tid }?.nombre
+                        }.getOrNull()
+                }
+                chipTienda.text = tiendaNombre ?: "Desconocida"
+
+                // ---- Ofertas similares (tu lógica original) ----
+                val ofertasConProducto = todasLasOfertas.mapNotNull { oferta ->
+                    val prod = todosLosProductos.find { it.id == oferta.productoId }
+                    prod?.let { Pair(oferta, prod) }
+                }
+
+                val ofertasFiltradas = ofertasConProducto
+                    .filter { (_, prod) ->
+                        prod.marca.categoria.equals(productoCategoria, ignoreCase = true) &&
+                                prod.nombre != productoNombre
+                    }
+                    .map { (oferta, _) -> oferta }
 
                 ofertasSimilares = ofertasFiltradas
                 adapter.actualizarLista(ofertasFiltradas)
-
                 recyclerViewSimilares.visibility =
                     if (ofertasFiltradas.isEmpty()) View.GONE else View.VISIBLE
 
             } catch (e: Exception) {
                 e.printStackTrace()
+                chipTienda.text = "Desconocida"
+                chipLikes.text = "0"
             }
         }
 
