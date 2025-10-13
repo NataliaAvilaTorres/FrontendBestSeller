@@ -28,8 +28,8 @@ class Actividad_IniciarSesion : AppCompatActivity() {
 
         // Retrofit
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.0.2.2:8090/") // backend local en emulador
-            .baseUrl("http://192.168.1.10:8090/") // tu backend real
+            .baseUrl("http://10.0.2.2:8090/") // backend local en emulador
+            //.baseUrl("http://192.168.1.16:8090/") // tu backend real
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)

@@ -36,8 +36,10 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
                     true
                 }
                 R.id.ubicacion -> {
-                    val intent = Intent(this, Actividad_Mapa::class.java)
-                    startActivity(intent)
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.contenedor, MapaFragment())
+                        .addToBackStack(null)
+                        .commit()
                     true
                 }
                 R.id.camara -> {

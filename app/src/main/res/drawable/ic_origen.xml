@@ -1,0 +1,29 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Sombra suave debajo del techo -->
+    <path
+        android:fillColor="#1A000000"
+        android:pathData="M12,3L3,10h1v9h16v-9h1L12,3z"
+        android:fillAlpha="0.2"/>
+
+    <!-- Cuerpo principal -->
+    <path
+        android:fillColor="#4285F4"
+        android:pathData="M12,2L3,9h2v11h14V9h2L12,2z"/>
+
+    <!-- Puerta -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10,14h4v6h-4z"
+        android:fillAlpha="0.9"/>
+
+    <!-- Detalle del techo -->
+    <path
+        android:fillColor="#5A9BFF"
+        android:pathData="M12,2L3,9h18L12,2z"
+        android:fillAlpha="0.95"/>
+</vector>

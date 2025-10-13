@@ -25,13 +25,10 @@ class InicioUsuarioFragment : Fragment() {
     private lateinit var adapterOfertas: OfertaAdaptador
     private lateinit var apiService: ApiService
     private var ofertas: List<Oferta> = emptyList()
-
     private lateinit var recyclerViewCategorias: RecyclerView
     private lateinit var adapterCategorias: CategoriaAdaptador
-
     private lateinit var recyclerViewTiendas: RecyclerView
     private lateinit var adapterTiendas: TiendaAdaptador
-
     private lateinit var progressScroll: ProgressBar
 
     override fun onCreateView(
@@ -68,8 +65,8 @@ class InicioUsuarioFragment : Fragment() {
 
         // --- API Retrofit ---
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.0.2.2:8090/") // emulador
-            .baseUrl("http://192.168.1.10:8090/") // tu backend real
+            .baseUrl("http://10.0.2.2:8090/") // emulador
+            //.baseUrl("http://192.168.1.16:8090/") // tu backend real
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)

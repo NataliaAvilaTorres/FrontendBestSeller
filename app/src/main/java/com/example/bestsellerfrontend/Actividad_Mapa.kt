@@ -4,9 +4,11 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -28,47 +30,40 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.net.URL
 import java.util.*
 
-class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
+class MapaFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var placesService: ApiService
     private val apiKey = "AIzaSyAmk_pwGdekb606Okhp9tCKKw5o3XiG4Ic"
 
-    // referencias
     private var autocompleteOrigen: AutocompleteSupportFragment? = null
+    private var autocompleteDestino: AutocompleteSupportFragment? = null
     private var markerOrigen: Marker? = null
     private var markerDestino: Marker? = null
     private var polylineRuta: Polyline? = null
 
     private var origenLatLng: LatLng? = null
     private var destinoLatLng: LatLng? = null
-
     private var direccionDestino: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.actividad_mapa)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.actividad_mapa, container, false)
 
-        val lat = intent.getDoubleExtra("destino_lat", Double.NaN)
-        val lng = intent.getDoubleExtra("destino_lng", Double.NaN)
-        direccionDestino = intent.getStringExtra("destino_direccion")
-
-        if (!lat.isNaN() && !lng.isNaN()) {
-            destinoLatLng = LatLng(lat, lng)
-        }
-
-        val btnRegresar = findViewById<android.widget.ImageView>(R.id.btnRegresarMapa)
-        btnRegresar.setOnClickListener { finish() }
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, apiKey)
+            Places.initialize(requireContext(), apiKey)
         }
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+            ?: SupportMapFragment.newInstance().also {
+                childFragmentManager.beginTransaction().replace(R.id.map, it).commit()
+            }
         mapFragment.getMapAsync(this)
 
         val retrofitPlaces = Retrofit.Builder()
@@ -77,52 +72,56 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
             .build()
         placesService = retrofitPlaces.create(ApiService::class.java)
 
-        // Autocomplete ORIGEN
-        autocompleteOrigen =
-            supportFragmentManager.findFragmentById(R.id.autocomplete_origen)
-                    as? AutocompleteSupportFragment
-        autocompleteOrigen?.setHint("Elige un punto de partida")
-        autocompleteOrigen?.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
+        inicializarAutocomplete()
+
+        return view
+    }
+
+    private fun inicializarAutocomplete() {
+
+        autocompleteOrigen = childFragmentManager
+            .findFragmentById(R.id.autocomplete_origen) as AutocompleteSupportFragment
+        autocompleteDestino = childFragmentManager
+            .findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+
+        autocompleteOrigen?.setHint("Selecciona tu origen")
+        autocompleteDestino?.setHint("Selecciona tu destino")
+
+        val campos = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
+        autocompleteOrigen?.setPlaceFields(campos)
+        autocompleteDestino?.setPlaceFields(campos)
+
         autocompleteOrigen?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
+                origenLatLng = place.latLng
                 place.latLng?.let {
-                    origenLatLng = it
                     actualizarMarkerOrigen(it, "Origen: ${place.name}")
-                    dibujarRuta()
                 }
             }
 
             override fun onError(status: com.google.android.gms.common.api.Status) {
-                status.statusMessage?.let { println("Error Origen: $it") }
+                println("Error al seleccionar origen: $status")
             }
         })
 
-        // Autocomplete DESTINO
-        val autocompleteDestino =
-            supportFragmentManager.findFragmentById(R.id.autocomplete_fragment)
-                    as AutocompleteSupportFragment
-        autocompleteDestino.setHint("Busca la tienda")
-        autocompleteDestino.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
-
-        //  Rellena ahi mismo con la dirección que recibimos desde la oferta
-        direccionDestino?.let { autocompleteDestino.setText(it) }
-
-        autocompleteDestino.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+        autocompleteDestino?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
+                destinoLatLng = place.latLng
                 place.latLng?.let {
-                    destinoLatLng = it
                     markerDestino?.remove()
                     markerDestino = mMap.addMarker(
-                        MarkerOptions().position(it).title("Destino: ${place.name}")
+                        MarkerOptions()
+                            .position(it)
+                            .title("Destino: ${place.name}")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     )
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
-                    buscarSupermercados(it.latitude, it.longitude)
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 14f))
                     dibujarRuta()
                 }
             }
 
             override fun onError(status: com.google.android.gms.common.api.Status) {
-                status.statusMessage?.let { println("Error Destino: $it") }
+                println("Error al seleccionar destino: $status")
             }
         })
     }
@@ -132,25 +131,19 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
 
         destinoLatLng?.let {
             markerDestino = mMap.addMarker(
-                MarkerOptions()
-                    .position(it)
-                    .title("Destino: ${direccionDestino ?: "Destino"}")
+                MarkerOptions().position(it).title("Destino: ${direccionDestino ?: "Destino"}")
             )
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
         }
 
         if (ContextCompat.checkSelfPermission(
-                this,
+                requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             habilitarUbicacion()
         } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1001
-            )
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1001)
         }
     }
 
@@ -171,8 +164,9 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
                     origenLatLng = ubicacion
                     actualizarMarkerOrigen(ubicacion, "Tu ubicación")
 
-                    val geocoder = Geocoder(this, Locale.getDefault())
-                    val direcciones = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                    val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                    val direcciones =
+                        geocoder.getFromLocation(location.latitude, location.longitude, 1)
                     if (!direcciones.isNullOrEmpty()) {
                         val direccion = direcciones[0].getAddressLine(0)
                         autocompleteOrigen?.setText(direccion)
@@ -265,7 +259,7 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
             var result = 0
             do {
                 b = encoded[index++].code - 63
-                result = result or (b and 0x1f shl shift)
+                result = result or ((b and 0x1f) shl shift)
                 shift += 5
             } while (b >= 0x20)
             val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
@@ -275,7 +269,7 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
             result = 0
             do {
                 b = encoded[index++].code - 63
-                result = result or (b and 0x1f shl shift)
+                result = result or ((b and 0x1f) shl shift)
                 shift += 5
             } while (b >= 0x20)
             val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
@@ -292,7 +286,6 @@ class Actividad_Mapa : AppCompatActivity(), OnMapReadyCallback {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 1001 &&
             grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED

@@ -12,7 +12,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -164,30 +163,30 @@ class ListaProductosFragment : Fragment() {
 
         // --- Retrofit ---
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/")
+            .baseUrl("http://10.0.2.2:8090/") // emulador
+            //.baseUrl("http://192.168.1.16:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // --- Cargar Tiendas ---
+        // --- Inicializar RecyclerView productos ---
+        recyclerViewProductos = view.findViewById(R.id.recyclerViewProductos)
+        recyclerViewProductos.layoutManager = LinearLayoutManager(requireContext())
+        adapterProductos = ProductoAdaptador(emptyList(), listaCompletaTiendas) // ✅ pasamos lista de tiendas
+        recyclerViewProductos.adapter = adapterProductos
+
+        // --- Cargar tiendas y luego productos ---
         lifecycleScope.launch {
             try {
                 val tiendas = apiService.listarTiendas()
                 listaCompletaTiendas = tiendas
                 adapterTiendas.actualizarLista(tiendas)
+                cargarProductos() // 🔹 Solo cargamos productos cuando ya tenemos tiendas
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Error al cargar tiendas", Toast.LENGTH_SHORT).show()
             }
         }
-
-        // --- Productos ---
-        recyclerViewProductos = view.findViewById(R.id.recyclerViewProductos)
-        recyclerViewProductos.layoutManager = LinearLayoutManager(requireContext())
-        adapterProductos = ProductoAdaptador(emptyList())
-        recyclerViewProductos.adapter = adapterProductos
-
-        cargarProductos()
 
         return view
     }
@@ -199,6 +198,7 @@ class ListaProductosFragment : Fragment() {
                 aplicarFiltros()
             } catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(requireContext(), "Error al cargar productos", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -231,7 +231,10 @@ class ListaProductosFragment : Fragment() {
             }
         }
 
-        adapterProductos.actualizarLista(productosFiltrados)
+        adapterProductos = ProductoAdaptador(productosFiltrados, listaCompletaTiendas)
+        recyclerViewProductos.adapter = adapterProductos
+
+        textViewCoincidencias.text = "${productosFiltrados.size} coincidencias"
     }
 
     private fun filtrarTiendas(query: String?) {
@@ -255,14 +258,12 @@ class ListaProductosFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     private fun obtenerUbicacionYOrdenar() {
-        // Intentamos con getCurrentLocation para mayor precisión
         val cts = CancellationTokenSource()
         fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token)
             .addOnSuccessListener { loc ->
                 if (loc != null) {
                     ordenarTiendasPorDistancia(loc)
                 } else {
-                    // Fallback a lastLocation
                     fusedClient.lastLocation
                         .addOnSuccessListener { last ->
                             if (last != null) ordenarTiendasPorDistancia(last)
@@ -287,7 +288,6 @@ class ListaProductosFragment : Fragment() {
         val latUser = ubicacion.latitude
         val lngUser = ubicacion.longitude
 
-        // Solo tiendas con coordenadas válidas
         val tiendasConDist = listaCompletaTiendas
             .filter { it.ubicacion != null }
             .map { tienda ->
@@ -304,11 +304,9 @@ class ListaProductosFragment : Fragment() {
             return
         }
 
-        // (Opcional) limitar a las N más cercanas
-        val top = tiendasConDist.take(20).map { it.first } // ajusta N si quieres
+        val top = tiendasConDist.take(20).map { it.first }
         adapterTiendas.actualizarLista(top)
 
-        // Feedback rápido
         val primera = tiendasConDist.first()
         Toast.makeText(
             requireContext(),
@@ -317,7 +315,6 @@ class ListaProductosFragment : Fragment() {
         ).show()
     }
 
-    // Haversine
     private fun distanciaKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val R = 6371.0
         val dLat = Math.toRadians(lat2 - lat1)

@@ -178,12 +178,21 @@ class OfertaAdaptador(
         holder.textUbicacion.setOnClickListener {
             val ubicacion = oferta.ubicacion
             if (ubicacion != null) {
-                val intent = Intent(context, Actividad_Mapa::class.java).apply {
-                    putExtra("destino_lat", ubicacion.lat)
-                    putExtra("destino_lng", ubicacion.lng)
-                    putExtra("destino_direccion", ubicacion.direccion ?: "Ubicación de la tienda")
+                // Crear el fragmento del mapa
+                val mapaFragment = MapaFragment().apply {
+                    arguments = Bundle().apply {
+                        putDouble("destino_lat", ubicacion.lat)
+                        putDouble("destino_lng", ubicacion.lng)
+                        putString("destino_direccion", ubicacion.direccion ?: "Ubicación de la tienda")
+                    }
                 }
-                context.startActivity(intent)
+
+                // Reemplazar el fragmento dentro del contenedor principal
+                val activity = context as AppCompatActivity
+                activity.supportFragmentManager.beginTransaction()
+                    .replace(R.id.contenedor, mapaFragment)
+                    .addToBackStack(null)
+                    .commit()
             } else {
                 Toast.makeText(context, "Esta oferta no tiene ubicación registrada", Toast.LENGTH_SHORT).show()
             }

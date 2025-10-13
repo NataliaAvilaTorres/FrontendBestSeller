@@ -49,7 +49,8 @@ class DetalleProductoFragment : Fragment() {
 
         // --- Retrofit ---
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/")  // host de tu PC desde el emulador
+            .baseUrl("http://10.0.2.2:8090/") // emulador
+            //.baseUrl("http://192.168.1.16:8090/")   // host de tu PC desde el emulador
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
