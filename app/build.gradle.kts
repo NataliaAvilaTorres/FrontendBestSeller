@@ -37,6 +37,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.mlkit:image-labeling:17.0.8")
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
@@ -62,4 +63,3 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
-

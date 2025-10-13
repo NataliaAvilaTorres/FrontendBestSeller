@@ -1,5 +1,8 @@
 package com.example.bestsellerfrontend
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,14 +10,21 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.math.*
 
 class ListaProductosFragment : Fragment() {
 
@@ -30,15 +40,31 @@ class ListaProductosFragment : Fragment() {
     private lateinit var textViewCoincidencias: TextView
     private lateinit var btnOrdenAsc: ImageView
     private lateinit var btnOrdenDesc: ImageView
+    private lateinit var btnCerca: ImageView
 
     private var productos: List<Producto> = emptyList()
     private var listaCompletaTiendas: List<Tienda> = emptyList()
 
-    // Variables para filtros combinados
+    // Filtros combinados
     private var categoriaSeleccionada: String? = null
     private var tiendaSeleccionadaId: String? = null
     private var textoBusquedaProducto: String? = null
-    private var ordenAscendente: Boolean? = null // null = sin ordenar, true = asc, false = desc
+    private var ordenAscendente: Boolean? = null
+
+    // Ubicación
+    private lateinit var fusedClient: FusedLocationProviderClient
+
+    private val locationPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        val fine = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val coarse = grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (fine || coarse) {
+            obtenerUbicacionYOrdenar()
+        } else {
+            Toast.makeText(requireContext(), "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,7 +79,10 @@ class ListaProductosFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // --- RecyclerView Categorías ---
+        // --- Init ubicación ---
+        fusedClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        // --- Categorías ---
         recyclerViewCategorias = view.findViewById(R.id.recyclerViewCategorias2)
         recyclerViewCategorias.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -78,7 +107,7 @@ class ListaProductosFragment : Fragment() {
         )
         recyclerViewCategorias.adapter = adapterCategorias
 
-        // --- RecyclerView Tiendas ---
+        // --- Tiendas ---
         recyclerViewTiendas = view.findViewById(R.id.recyclerViewTiendas)
         recyclerViewTiendas.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -86,16 +115,15 @@ class ListaProductosFragment : Fragment() {
         adapterTiendas = TiendaAdaptador(
             listaTiendas = emptyList(),
             context = requireContext(),
-            layoutId = R.layout.item_tienda,
-            onTiendaClick = { tienda ->
-                tiendaSeleccionadaId = tienda.id
-                Toast.makeText(requireContext(), "Seleccionaste ${tienda.nombre}", Toast.LENGTH_SHORT).show()
-                aplicarFiltros()
-            }
-        )
+            layoutId = R.layout.item_tienda
+        ) { tienda ->
+            tiendaSeleccionadaId = tienda.id
+            Toast.makeText(requireContext(), "Seleccionaste ${tienda.nombre}", Toast.LENGTH_SHORT).show()
+            aplicarFiltros()
+        }
         recyclerViewTiendas.adapter = adapterTiendas
 
-        // --- SearchView para tiendas ---
+        // --- Search tiendas ---
         searchViewTiendas = view.findViewById(R.id.searchviewTiendas)
         searchViewTiendas.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -108,7 +136,7 @@ class ListaProductosFragment : Fragment() {
             }
         })
 
-        // --- SearchView para productos ---
+        // --- Search productos ---
         searchViewProductos = view.findViewById(R.id.searchview)
         searchViewProductos.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -123,20 +151,16 @@ class ListaProductosFragment : Fragment() {
             }
         })
 
-        // --- Coincidencias y botones de ordenamiento ---
+        // --- Coincidencias + ordenar precio ---
         textViewCoincidencias = view.findViewById(R.id.textViewCoincidencias)
         btnOrdenAsc = view.findViewById(R.id.btnOrdenAsc)
         btnOrdenDesc = view.findViewById(R.id.btnOrdenDesc)
+        btnOrdenAsc.setOnClickListener { ordenAscendente = true; aplicarFiltros() }
+        btnOrdenDesc.setOnClickListener { ordenAscendente = false; aplicarFiltros() }
 
-        btnOrdenAsc.setOnClickListener {
-            ordenAscendente = true
-            aplicarFiltros()
-        }
-
-        btnOrdenDesc.setOnClickListener {
-            ordenAscendente = false
-            aplicarFiltros()
-        }
+        // --- Botón "cerca" ---
+        btnCerca = view.findViewById(R.id.btnCerca)
+        btnCerca.setOnClickListener { pedirUbicacionYOrdenarTiendas() }
 
         // --- Retrofit ---
         val retrofit = Retrofit.Builder()
@@ -145,7 +169,7 @@ class ListaProductosFragment : Fragment() {
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // --- Cargar Tiendas desde API ---
+        // --- Cargar Tiendas ---
         lifecycleScope.launch {
             try {
                 val tiendas = apiService.listarTiendas()
@@ -157,7 +181,7 @@ class ListaProductosFragment : Fragment() {
             }
         }
 
-        // --- RecyclerView Productos ---
+        // --- Productos ---
         recyclerViewProductos = view.findViewById(R.id.recyclerViewProductos)
         recyclerViewProductos.layoutManager = LinearLayoutManager(requireContext())
         adapterProductos = ProductoAdaptador(emptyList())
@@ -172,7 +196,7 @@ class ListaProductosFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 productos = apiService.listarProductos()
-                aplicarFiltros() // muestra todos al inicio
+                aplicarFiltros()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -189,9 +213,7 @@ class ListaProductosFragment : Fragment() {
         }
 
         tiendaSeleccionadaId?.let { idTienda ->
-            productosFiltrados = productosFiltrados.filter {
-                it.tiendaId == idTienda
-            }
+            productosFiltrados = productosFiltrados.filter { it.tiendaId == idTienda }
         }
 
         textoBusquedaProducto?.let { texto ->
@@ -201,7 +223,6 @@ class ListaProductosFragment : Fragment() {
             }
         }
 
-        // Ordenamiento por precio
         ordenAscendente?.let { asc ->
             productosFiltrados = if (asc) {
                 productosFiltrados.sortedBy { it.precio }
@@ -219,5 +240,96 @@ class ListaProductosFragment : Fragment() {
             it.nombre.lowercase().contains(texto)
         }
         adapterTiendas.actualizarLista(filtradas)
+    }
+
+    // ---------- UBICACIÓN Y ORDEN POR DISTANCIA ----------
+
+    private fun pedirUbicacionYOrdenarTiendas() {
+        locationPermissionsLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun obtenerUbicacionYOrdenar() {
+        // Intentamos con getCurrentLocation para mayor precisión
+        val cts = CancellationTokenSource()
+        fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token)
+            .addOnSuccessListener { loc ->
+                if (loc != null) {
+                    ordenarTiendasPorDistancia(loc)
+                } else {
+                    // Fallback a lastLocation
+                    fusedClient.lastLocation
+                        .addOnSuccessListener { last ->
+                            if (last != null) ordenarTiendasPorDistancia(last)
+                            else Toast.makeText(requireContext(), "No se pudo obtener ubicación", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(requireContext(), "Error de ubicación: ${it.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Error de ubicación: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun ordenarTiendasPorDistancia(ubicacion: Location) {
+        if (listaCompletaTiendas.isEmpty()) {
+            Toast.makeText(requireContext(), "No hay tiendas para ordenar", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val latUser = ubicacion.latitude
+        val lngUser = ubicacion.longitude
+
+        // Solo tiendas con coordenadas válidas
+        val tiendasConDist = listaCompletaTiendas
+            .filter { it.ubicacion != null }
+            .map { tienda ->
+                val distKm = distanciaKm(
+                    latUser, lngUser,
+                    tienda.ubicacion!!.lat, tienda.ubicacion.lng
+                )
+                Pair(tienda, distKm)
+            }
+            .sortedBy { it.second }
+
+        if (tiendasConDist.isEmpty()) {
+            Toast.makeText(requireContext(), "Las tiendas no tienen coordenadas", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // (Opcional) limitar a las N más cercanas
+        val top = tiendasConDist.take(20).map { it.first } // ajusta N si quieres
+        adapterTiendas.actualizarLista(top)
+
+        // Feedback rápido
+        val primera = tiendasConDist.first()
+        Toast.makeText(
+            requireContext(),
+            "Más cercana: ${primera.first.nombre} (${formatKm(primera.second)})",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    // Haversine
+    private fun distanciaKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2).pow(2.0) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2).pow(2.0)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return R * c
+    }
+
+    private fun formatKm(km: Double): String {
+        return if (km < 1) "${(km * 1000).roundToInt()} m" else String.format("%.2f km", km)
     }
 }

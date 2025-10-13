@@ -53,17 +53,33 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp" />
 
-        <!-- Buscador de tiendas -->
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchviewTiendas"
+        <!-- Header -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/barrabusqueda_minimal"
-            app:iconifiedByDefault="false"
-            app:queryHint="Buscar tienda" />
+            android:layout_height="60dp"
+            android:layout_margin="14dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/btnCerca"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/cerca"
+                android:layout_marginTop="10dp"
+                android:contentDescription="Regresar" />
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchviewTiendas"
+                android:layout_width="333dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="25dp"
+                android:background="@drawable/barrabusqueda_minimal"
+                app:iconifiedByDefault="false"
+                app:queryHint="Buscar tienda" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewTiendas"

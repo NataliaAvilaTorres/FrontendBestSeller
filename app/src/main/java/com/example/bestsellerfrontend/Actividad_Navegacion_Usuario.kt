@@ -40,6 +40,11 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
                     startActivity(intent)
                     true
                 }
+                R.id.camara -> {
+                    val intent = Intent(this, ReconocimientoActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
                 else -> false
             }
         }
