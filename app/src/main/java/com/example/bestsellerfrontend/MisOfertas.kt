@@ -28,32 +28,45 @@ class MisOfertas : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_mis_ofertas, container, false)
 
+        // Configurar Retrofit para conectarse al backend
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+        // Crear una instancia del servicio API
         apiService = retrofit.create(ApiService::class.java)
 
+        // Configurar el RecyclerView
         recyclerView = view.findViewById(R.id.recyclerViewMisOfertas)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // Crear el adaptador con lista vacía inicialmente
         adapter = OfertaAdaptador(emptyList(), requireContext(), apiService, mostrarBotones = true)
         recyclerView.adapter = adapter
 
-        val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+        // Obtener el ID del usuario desde las preferencias compartidas
+        val prefs =
+            requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
         val usuarioId = prefs.getString("id", null)
 
-        //  Llamar al endpoint de tus ofertas
+        // Si el usuario tiene un ID guardado, obtener sus ofertas desde la API
         if (usuarioId != null) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
+                    // Llamada a la API para listar las ofertas del usuario
                     ofertas = apiService.listarOfertasUsuario(usuarioId)
+
+                    // Actualizar el adaptador con las ofertas obtenidas
                     adapter.actualizarLista(ofertas)
                 } catch (e: Exception) {
+                    // Capturar y mostrar cualquier error que ocurra
                     e.printStackTrace()
                 }
             }
         }
 
+        // Retornar la vista inflada del fragmento
         return view
     }
 }

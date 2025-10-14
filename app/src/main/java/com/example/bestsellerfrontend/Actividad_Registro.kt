@@ -18,9 +18,9 @@ import android.widget.ImageView
 import retrofit2.converter.gson.GsonConverterFactory
 import android.content.Intent
 
-
 class Actividad_Registro : AppCompatActivity() {
 
+    // Servicio API para interactuar con el backend
     private lateinit var apiService: ApiService
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,51 +36,65 @@ class Actividad_Registro : AppCompatActivity() {
 
         val btnAtras = findViewById<ImageView>(R.id.btn_atras)
         btnAtras.setOnClickListener {
-            finish()
+            finish() // Cierra la actividad actual
         }
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8090/") // emulador
+            .baseUrl("http://10.0.2.2:8090/")
             //.baseUrl("http://192.168.1.16:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+        // Inicializa el servicio API con la interfaz definida
         apiService = retrofit.create(ApiService::class.java)
 
-        // Spinner de ciudades
+        // --- CONFIGURACIÓN DEL SPINNER (Lista desplegable de ciudades) ---
         val ciudadSpinner: Spinner = findViewById(R.id.ciudadSpinner)
         val adapter = ArrayAdapter.createFromResource(
             this,
-            R.array.ciudades_array,
+            R.array.ciudades_array, // Lista de ciudades definida en strings.xml
             android.R.layout.simple_spinner_item
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         ciudadSpinner.adapter = adapter
-        ciudadSpinner.setSelection(0)
+        ciudadSpinner.setSelection(0) // Selecciona la primera opción por defecto
 
+        // --- ENLACE DE CAMPOS DEL FORMULARIO ---
         val nombreEditarTexto = findViewById<TextInputEditText>(R.id.nombreEditarTexto)
         val correoEditarTexto = findViewById<TextInputEditText>(R.id.correoEditarTexto)
         val contrasenaEditarTexto = findViewById<TextInputEditText>(R.id.contrasenaEditarTexto)
         val registerButton = findViewById<Button>(R.id.registerButton)
 
+        // --- EVENTO AL PRESIONAR EL BOTÓN DE REGISTRO ---
         registerButton.setOnClickListener {
+            // Obtiene los valores ingresados por el usuario
             val nombre = nombreEditarTexto.text.toString().trim()
             val correo = correoEditarTexto.text.toString().trim()
             val ciudad = ciudadSpinner.selectedItem.toString()
             val contrasena = contrasenaEditarTexto.text.toString().trim()
 
+            // Validación de campos vacíos
             if (nombre.isEmpty() || correo.isEmpty() || contrasena.isEmpty()) {
-                Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
+            // Crea un objeto Usuario con los datos ingresados
             val usuario = Usuario(nombre, correo, ciudad, contrasena)
-            registerButton.isEnabled = false
+            registerButton.isEnabled = false // Desactiva el botón mientras se procesa la solicitud
 
+            // --- LLAMADA ASÍNCRONA AL SERVIDOR CON COROUTINES ---
             lifecycleScope.launch {
                 try {
+                    // Envía los datos al backend usando Retrofit
                     val respuesta = apiService.registrarUsuario(usuario)
-                    Toast.makeText(this@Actividad_Registro, respuesta.mensaje, Toast.LENGTH_SHORT).show()
 
+                    // Muestra mensaje del servidor (éxito o error)
+                    Toast.makeText(this@Actividad_Registro, respuesta.mensaje, Toast.LENGTH_SHORT)
+                        .show()
+
+                    // Si el registro fue exitoso, guarda los datos del usuario en SharedPreferences
                     if (respuesta.usuario != null) {
                         val prefs = getSharedPreferences("usuarioPrefs", MODE_PRIVATE)
                         val editor = prefs.edit()
@@ -91,21 +105,31 @@ class Actividad_Registro : AppCompatActivity() {
                         editor.putString("contrasena", respuesta.usuario.contrasena)
                         editor.apply()
 
-                        val intent = Intent(this@Actividad_Registro, Actividad_Navegacion_Usuario::class.java)
+                        // Redirige al usuario a la pantalla principal
+                        val intent = Intent(
+                            this@Actividad_Registro,
+                            Actividad_Navegacion_Usuario::class.java
+                        )
                         intent.putExtra("usuarioNombre", respuesta.usuario.nombre)
                         startActivity(intent)
-                        finish()
+                        finish() // Finaliza la actividad actual
                     }
 
-                    // Limpiar campos
+                    // Limpia los campos del formulario después del registro
                     nombreEditarTexto.text?.clear()
                     correoEditarTexto.text?.clear()
                     contrasenaEditarTexto.text?.clear()
                     ciudadSpinner.setSelection(0)
 
                 } catch (e: Exception) {
-                    Toast.makeText(this@Actividad_Registro, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
+                    // Manejo de errores de red o servidor
+                    Toast.makeText(
+                        this@Actividad_Registro,
+                        "Error al guardar: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } finally {
+                    // Reactiva el botón de registro
                     registerButton.isEnabled = true
                 }
             }

@@ -9,10 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
+
 class ProductoAdaptador(
     private var listaProductos: List<Producto>,
-    private val listaTiendas: List<Tienda> // 🔹 Recibimos las tiendas disponibles
+    private val listaTiendas: List<Tienda>
 ) : RecyclerView.Adapter<ProductoAdaptador.ProductoViewHolder>() {
+
 
     class ProductoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageProducto: ImageView = itemView.findViewById(R.id.imagenProducto)
@@ -32,22 +34,23 @@ class ProductoAdaptador(
     override fun onBindViewHolder(holder: ProductoViewHolder, position: Int) {
         val producto = listaProductos[position]
 
-        // 🔹 Buscar tienda correspondiente al producto
+        // Buscar la tienda correspondiente al producto
         val tienda = listaTiendas.find { it.id == producto.tiendaId }
 
+        // Asignar textos a los elementos visuales
         holder.textNombre.text = producto.nombre
         holder.textCategoria.text = producto.marca.categoria
         holder.textPrecio.text = "$${producto.precio}"
         holder.textTienda.text = tienda?.nombre ?: "Tienda desconocida"
 
-        // Imagen del producto
+        // Cargar imagen del producto con Glide
         Glide.with(holder.itemView.context)
             .load(producto.urlImagen)
             .placeholder(R.drawable.producto)
             .error(R.drawable.producto)
             .into(holder.imageProducto)
 
-        // Imagen de la tienda
+        // Cargar imagen de la tienda (en formato circular)
         Glide.with(holder.itemView.context)
             .load(tienda?.urlImagen)
             .placeholder(R.drawable.fondo_imagen_redonda)
@@ -55,6 +58,7 @@ class ProductoAdaptador(
             .circleCrop()
             .into(holder.imageTienda)
 
+        // Acción al hacer clic en un producto → abrir fragmento de detalle
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
             if (context is AppCompatActivity) {
@@ -68,6 +72,7 @@ class ProductoAdaptador(
                     putString("tienda_imagen", tienda?.urlImagen ?: "")
                 }
 
+                // Reemplazar el fragmento actual por el de detalle del producto
                 context.supportFragmentManager.beginTransaction()
                     .replace(R.id.contenedor, fragment)
                     .addToBackStack(null)
@@ -76,8 +81,14 @@ class ProductoAdaptador(
         }
     }
 
+    /**
+     * Retorna la cantidad de elementos (productos) que mostrará el RecyclerView.
+     */
     override fun getItemCount(): Int = listaProductos.size
 
+    /**
+     * Permite actualizar la lista de productos y refrescar la vista del RecyclerView.
+     */
     fun actualizarLista(nuevaLista: List<Producto>) {
         listaProductos = nuevaLista
         notifyDataSetChanged()

@@ -30,22 +30,22 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.net.URL
 import java.util.*
 
+
 class MapaFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var placesService: ApiService
     private val apiKey = "AIzaSyAmk_pwGdekb606Okhp9tCKKw5o3XiG4Ic"
-
     private var autocompleteOrigen: AutocompleteSupportFragment? = null
     private var autocompleteDestino: AutocompleteSupportFragment? = null
     private var markerOrigen: Marker? = null
     private var markerDestino: Marker? = null
     private var polylineRuta: Polyline? = null
-
     private var origenLatLng: LatLng? = null
     private var destinoLatLng: LatLng? = null
     private var direccionDestino: String? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,29 +54,38 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_mapa, container, false)
 
+        // Inicializa el cliente de ubicación
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
+        // Inicializa la API de lugares de Google si no está activa
         if (!Places.isInitialized()) {
             Places.initialize(requireContext(), apiKey)
         }
 
+        // Carga el mapa en el fragmento
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
             ?: SupportMapFragment.newInstance().also {
                 childFragmentManager.beginTransaction().replace(R.id.map, it).commit()
             }
-        mapFragment.getMapAsync(this)
+        mapFragment.getMapAsync(this) // Espera a que el mapa esté listo
 
+        // Configura Retrofit para consumir la API de Google Places
         val retrofitPlaces = Retrofit.Builder()
             .baseUrl("https://maps.googleapis.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         placesService = retrofitPlaces.create(ApiService::class.java)
 
+        // Inicializa los campos de autocompletado (origen y destino)
         inicializarAutocomplete()
 
         return view
     }
 
+    /**
+     * Inicializa los fragmentos de autocompletado de origen y destino
+     * y define qué hacer cuando el usuario selecciona un lugar.
+     */
     private fun inicializarAutocomplete() {
 
         autocompleteOrigen = childFragmentManager
@@ -84,13 +93,16 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         autocompleteDestino = childFragmentManager
             .findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
 
+        // Asigna los textos guía
         autocompleteOrigen?.setHint("Selecciona tu origen")
         autocompleteDestino?.setHint("Selecciona tu destino")
 
+        // Define qué campos de información se obtendrán del lugar
         val campos = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
         autocompleteOrigen?.setPlaceFields(campos)
         autocompleteDestino?.setPlaceFields(campos)
 
+        // Listener para cuando se selecciona un origen
         autocompleteOrigen?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
                 origenLatLng = place.latLng
@@ -104,18 +116,23 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
+        // Listener para cuando se selecciona un destino
         autocompleteDestino?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
                 destinoLatLng = place.latLng
                 place.latLng?.let {
+                    // Elimina marcador previo si existe
                     markerDestino?.remove()
+                    // Crea nuevo marcador en el destino
                     markerDestino = mMap.addMarker(
                         MarkerOptions()
                             .position(it)
                             .title("Destino: ${place.name}")
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     )
+                    // Centra la cámara en el destino
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 14f))
+                    // Dibuja la ruta entre origen y destino
                     dibujarRuta()
                 }
             }
@@ -126,9 +143,14 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         })
     }
 
+    /**
+     * Se llama cuando el mapa está listo para usarse.
+     * Aquí se manejan permisos y la ubicación inicial.
+     */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
+        // Si ya hay un destino cargado, lo muestra
         destinoLatLng?.let {
             markerDestino = mMap.addMarker(
                 MarkerOptions().position(it).title("Destino: ${direccionDestino ?: "Destino"}")
@@ -136,6 +158,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
         }
 
+        // Verifica permisos de ubicación
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -147,6 +170,9 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+
+    // Activa la ubicación en el mapa si los permisos están concedidos.
+
     private fun habilitarUbicacion() {
         try {
             mMap.isMyLocationEnabled = true
@@ -156,6 +182,8 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+
+    // Obtiene la ubicación actual del usuario y la muestra en el mapa.
     private fun obtenerUbicacionActual() {
         try {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -164,6 +192,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
                     origenLatLng = ubicacion
                     actualizarMarkerOrigen(ubicacion, "Tu ubicación")
 
+                    // Convierte las coordenadas en una dirección legible
                     val geocoder = Geocoder(requireContext(), Locale.getDefault())
                     val direcciones =
                         geocoder.getFromLocation(location.latitude, location.longitude, 1)
@@ -172,6 +201,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
                         autocompleteOrigen?.setText(direccion)
                     }
 
+                    // Busca supermercados cercanos
                     buscarSupermercados(location.latitude, location.longitude)
                 }
             }
@@ -180,6 +210,8 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+
+    // Agrega o actualiza el marcador del origen en el mapa.
     private fun actualizarMarkerOrigen(pos: LatLng, titulo: String) {
         markerOrigen?.remove()
         markerOrigen = mMap.addMarker(
@@ -191,6 +223,8 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 14f))
     }
 
+
+    // Busca supermercados cercanos al usuario utilizando la API de Google Places.
     private fun buscarSupermercados(lat: Double, lng: Double) {
         lifecycleScope.launch {
             try {
@@ -200,6 +234,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
                     tipo = "supermarket",
                     apiKey = apiKey
                 )
+                // Agrega marcadores de los supermercados en el mapa
                 for (lugar in respuesta.results) {
                     val pos = LatLng(lugar.geometry.location.lat, lugar.geometry.location.lng)
                     mMap.addMarker(MarkerOptions().position(pos).title(lugar.name))
@@ -210,6 +245,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    // Traza una ruta entre el origen y el destino seleccionados usando la API de Directions.
     private fun dibujarRuta() {
         if (origenLatLng == null || destinoLatLng == null) return
 
@@ -221,10 +257,12 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
                             "&destination=${destinoLatLng!!.latitude},${destinoLatLng!!.longitude}" +
                             "&key=$apiKey"
 
+                // Ejecuta la solicitud HTTP en un hilo de fondo
                 val result = withContext(Dispatchers.IO) {
                     URL(url).readText()
                 }
 
+                // Decodifica la respuesta JSON para obtener los puntos de la ruta
                 val json = JSONObject(result)
                 val puntos = json.getJSONArray("routes")
                     .getJSONObject(0)
@@ -233,6 +271,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
 
                 val decodedPath = decodePolyline(puntos)
 
+                // Dibuja la línea de la ruta en el mapa
                 polylineRuta?.remove()
                 polylineRuta = mMap.addPolyline(
                     PolylineOptions()
@@ -246,6 +285,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    // Decodifica la ruta en formato Polyline a una lista de coordenadas LatLng.
     private fun decodePolyline(encoded: String): List<LatLng> {
         val poly = ArrayList<LatLng>()
         var index = 0
@@ -253,6 +293,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         var lat = 0
         var lng = 0
 
+        // Algoritmo estándar de decodificación de polilínea
         while (index < len) {
             var b: Int
             var shift = 0
@@ -281,6 +322,7 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
         return poly
     }
 
+    // Maneja la respuesta del usuario al solicitar permisos de ubicación.
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

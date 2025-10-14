@@ -15,6 +15,7 @@ class VistaCategoriasFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         val view = inflater.inflate(R.layout.actividad_vista_categorias, container, false)
 
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
@@ -22,13 +23,16 @@ class VistaCategoriasFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        val granos = view.findViewById<CardView>(R.id.granos) // Granos y Cereales
-        val bebidas = view.findViewById<CardView>(R.id.bebidas) // Bebidas
-        val enlatados = view.findViewById<CardView>(R.id.enlatados) // Enlatados
-        val pastas = view.findViewById<CardView>(R.id.pastas) // Pastas y Harinas
-        val dulces = view.findViewById<CardView>(R.id.dulces) // Dulces
-        val instantaneos = view.findViewById<CardView>(R.id.instantaneos) // Instantaneos y Precocidos
+        // --- TARJETAS DE CATEGORÍAS ---
+        val granos = view.findViewById<CardView>(R.id.granos)
+        val bebidas = view.findViewById<CardView>(R.id.bebidas)
+        val enlatados = view.findViewById<CardView>(R.id.enlatados)
+        val pastas = view.findViewById<CardView>(R.id.pastas)
+        val dulces = view.findViewById<CardView>(R.id.dulces)
+        val instantaneos = view.findViewById<CardView>(R.id.instantaneos)
 
+        // --- EVENTOS DE CLIC PARA CADA CATEGORÍA ---
+        // Cuando el usuario hace clic en una tarjeta, se abre la lista de productos filtrada
         granos.setOnClickListener { abrirListaConFiltro("Granos y Cereales") }
         bebidas.setOnClickListener { abrirListaConFiltro("Bebidas") }
         enlatados.setOnClickListener { abrirListaConFiltro("Enlatados") }
@@ -41,14 +45,17 @@ class VistaCategoriasFragment : Fragment() {
 
     private fun abrirListaConFiltro(categoria: String) {
         val fragment = ListaProductosFragment()
+
+        // Crea un Bundle (paquete de datos) para enviar la categoría seleccionada
         fragment.arguments = Bundle().apply {
             putString("categoria_filtro", categoria)
         }
 
+        // Reemplaza el fragmento actual por el de lista de productos,
+        // manteniendo la navegación en la pila para poder regresar
         parentFragmentManager.beginTransaction()
             .replace(R.id.contenedor, fragment)
             .addToBackStack(null)
             .commit()
     }
 }
-
