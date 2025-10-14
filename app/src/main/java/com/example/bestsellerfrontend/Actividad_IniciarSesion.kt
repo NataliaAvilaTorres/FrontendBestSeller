@@ -93,10 +93,7 @@ class Actividad_IniciarSesion : AppCompatActivity() {
                         editor.apply() // Guarda los cambios de manera asíncrona
 
                         // --- Navegar a la actividad principal del usuario ---
-                        val intent = Intent(
-                            this@Actividad_IniciarSesion,
-                            Actividad_Navegacion_Usuario::class.java
-                        )
+                        val intent = Intent(this@Actividad_IniciarSesion, Actividad_Navegacion_Usuario::class.java)
                         startActivity(intent)
                         finish() // Cierra esta actividad para que no vuelva con "back"
                     }
