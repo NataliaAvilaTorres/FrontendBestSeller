@@ -71,6 +71,9 @@ class ListaProductosFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_lista_productos, container, false)
 
+        tiendaSeleccionadaId = arguments?.getString("filtro_tienda_id")
+
+
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
         btnRegresar.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()

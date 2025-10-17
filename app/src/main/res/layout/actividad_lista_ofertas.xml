@@ -89,38 +89,43 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <!-- Spinner A-Z -->
+                <!-- Spinner Expiración (tamaño fijo) -->
                 <Spinner
-                    android:id="@+id/spinnerOrdenAZ"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/spinnerExpiracion"
+                    android:layout_width="110dp"
                     android:layout_height="40dp"
-                    android:layout_marginEnd="12dp"
+                    android:minWidth="110dp"
+                    android:dropDownWidth="220dp"
                     android:background="@drawable/fondo2"
                     android:backgroundTint="#2A5270"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="6dp"
                     android:spinnerMode="dropdown"
-                    android:popupBackground="#2A5270" />
+                    android:popupBackground="#2A5270"
+                    android:layout_marginEnd="12dp" />
 
-                <!-- Spinner Precios -->
+                <!-- Spinner Proximidad (tamaño fijo) -->
                 <Spinner
-                    android:id="@+id/spinnerPrecio"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/spinnerProximidad"
+                    android:layout_width="110dp"
                     android:layout_height="40dp"
-                    android:layout_marginEnd="12dp"
+                    android:minWidth="110dp"
+                    android:dropDownWidth="220dp"
                     android:background="@drawable/fondo2"
                     android:backgroundTint="#2A5270"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="6dp"
                     android:spinnerMode="dropdown"
-                    android:popupBackground="#2A5270" />
+                    android:popupBackground="#2A5270"
+                    android:layout_marginEnd="12dp" />
 
-                <!-- Spinner Likes -->
+                <!-- Spinner Likes (tamaño fijo) -->
                 <Spinner
                     android:id="@+id/btnLikes"
-                    android:layout_width="wrap_content"
+                    android:layout_width="110dp"
                     android:layout_height="40dp"
-                    android:layout_marginTop="-2dp"
+                    android:minWidth="110dp"
+                    android:dropDownWidth="220dp"
                     android:background="@drawable/fondo2"
                     android:backgroundTint="#2A5270"
                     android:paddingHorizontal="12dp"
@@ -129,9 +134,6 @@
                     android:popupBackground="#2A5270" />
 
             </LinearLayout>
-
-
-
             <!-- Coincidencias -->
             <TextView
                 android:id="@+id/textViewCoincidencias"

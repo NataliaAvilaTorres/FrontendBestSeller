@@ -1,6 +1,7 @@
 package com.example.bestsellerfrontend
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
@@ -30,22 +31,58 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.net.URL
 import java.util.*
 
+// NUEVOS imports para el InfoWindow con imagen
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.widget.ImageView
+import android.widget.TextView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 
 class MapaFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var placesService: ApiService
+
+    // APIs
     private val apiKey = "AIzaSyAmk_pwGdekb606Okhp9tCKKw5o3XiG4Ic"
+    private lateinit var directionsService: ApiService
+    private lateinit var backendService: ApiService
+
+    // Autocomplete
     private var autocompleteOrigen: AutocompleteSupportFragment? = null
     private var autocompleteDestino: AutocompleteSupportFragment? = null
+
+    // Marcadores / ruta
     private var markerOrigen: Marker? = null
     private var markerDestino: Marker? = null
     private var polylineRuta: Polyline? = null
+
+    // Estado
     private var origenLatLng: LatLng? = null
     private var destinoLatLng: LatLng? = null
     private var direccionDestino: String? = null
 
+    // Tiendas backend
+    private var tiendas: List<Tienda> = emptyList()
+
+    // CACHE de bitmaps para las imágenes en el InfoWindow
+    private val markerIconCache = mutableMapOf<Marker, Bitmap>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Lee argumentos desde OfertaAdaptador
+        arguments?.let { args ->
+            if (args.containsKey("destino_lat") && args.containsKey("destino_lng")) {
+                val lat = args.getDouble("destino_lat")
+                val lng = args.getDouble("destino_lng")
+                destinoLatLng = LatLng(lat, lng)
+            }
+            direccionDestino = args.getString("destino_direccion")
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,164 +91,176 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_mapa, container, false)
 
-        // Inicializa el cliente de ubicación
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        if (!Places.isInitialized()) Places.initialize(requireContext(), apiKey)
 
-        // Inicializa la API de lugares de Google si no está activa
-        if (!Places.isInitialized()) {
-            Places.initialize(requireContext(), apiKey)
-        }
-
-        // Carga el mapa en el fragmento
+        // Mapa
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
             ?: SupportMapFragment.newInstance().also {
                 childFragmentManager.beginTransaction().replace(R.id.map, it).commit()
             }
-        mapFragment.getMapAsync(this) // Espera a que el mapa esté listo
+        mapFragment.getMapAsync(this)
 
-        // Configura Retrofit para consumir la API de Google Places
-        val retrofitPlaces = Retrofit.Builder()
+        // Retrofit Google (Directions)
+        directionsService = Retrofit.Builder()
             .baseUrl("https://maps.googleapis.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        placesService = retrofitPlaces.create(ApiService::class.java)
+            .create(ApiService::class.java)
 
-        // Inicializa los campos de autocompletado (origen y destino)
+        // Retrofit backend (tus tiendas)
+        backendService = Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8090/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+
         inicializarAutocomplete()
 
         return view
     }
 
-    /**
-     * Inicializa los fragmentos de autocompletado de origen y destino
-     * y define qué hacer cuando el usuario selecciona un lugar.
-     */
     private fun inicializarAutocomplete() {
-
         autocompleteOrigen = childFragmentManager
             .findFragmentById(R.id.autocomplete_origen) as AutocompleteSupportFragment
         autocompleteDestino = childFragmentManager
             .findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
 
-        // Asigna los textos guía
         autocompleteOrigen?.setHint("Selecciona tu origen")
         autocompleteDestino?.setHint("Selecciona tu destino")
 
-        // Define qué campos de información se obtendrán del lugar
         val campos = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
         autocompleteOrigen?.setPlaceFields(campos)
         autocompleteDestino?.setPlaceFields(campos)
 
-        // Listener para cuando se selecciona un origen
         autocompleteOrigen?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
-                origenLatLng = place.latLng
                 place.latLng?.let {
+                    origenLatLng = it
                     actualizarMarkerOrigen(it, "Origen: ${place.name}")
+                    dibujarRuta() // por si ya hay destino
                 }
             }
-
-            override fun onError(status: com.google.android.gms.common.api.Status) {
-                println("Error al seleccionar origen: $status")
-            }
+            override fun onError(status: com.google.android.gms.common.api.Status) {}
         })
 
-        // Listener para cuando se selecciona un destino
         autocompleteDestino?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
-                destinoLatLng = place.latLng
                 place.latLng?.let {
-                    // Elimina marcador previo si existe
-                    markerDestino?.remove()
-                    // Crea nuevo marcador en el destino
-                    markerDestino = mMap.addMarker(
-                        MarkerOptions()
-                            .position(it)
-                            .title("Destino: ${place.name}")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                    )
-                    // Centra la cámara en el destino
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 14f))
-                    // Dibuja la ruta entre origen y destino
+                    destinoLatLng = it
+                    actualizarMarkerDestino(it, "Destino: ${place.name}")
                     dibujarRuta()
                 }
             }
-
-            override fun onError(status: com.google.android.gms.common.api.Status) {
-                println("Error al seleccionar destino: $status")
-            }
+            override fun onError(status: com.google.android.gms.common.api.Status) {}
         })
     }
 
-    /**
-     * Se llama cuando el mapa está listo para usarse.
-     * Aquí se manejan permisos y la ubicación inicial.
-     */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Si ya hay un destino cargado, lo muestra
-        destinoLatLng?.let {
-            markerDestino = mMap.addMarker(
-                MarkerOptions().position(it).title("Destino: ${direccionDestino ?: "Destino"}")
-            )
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+        // Adapter del InfoWindow (nombre + imagen + "Ver productos")
+        mMap.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
+            override fun getInfoWindow(marker: Marker): View? {
+                // Usamos el "globo" por defecto; personalizamos el contenido.
+                return null
+            }
+
+            override fun getInfoContents(marker: Marker): View? {
+                val tienda = marker.tag as? Tienda ?: return null
+                val view = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.info_window_tienda, null, false)
+
+                val img = view.findViewById<ImageView>(R.id.imgTiendaInfo)
+                val tv = view.findViewById<TextView>(R.id.tvNombreTiendaInfo)
+                val btn = view.findViewById<TextView>(R.id.btnVerProductosInfo)
+
+                tv.text = tienda.nombre
+                btn.text = "Ver productos"
+
+                // Usa cache si ya está el bitmap
+                val bmp = markerIconCache[marker]
+                if (bmp != null) {
+                    img.setImageBitmap(bmp)
+                } else {
+                    img.setImageResource(R.drawable.fondo_imagen_redonda)
+                }
+                return view
+            }
+        })
+
+        // Click en todo el InfoWindow -> abrir ListaProductosFragment filtrado por tienda
+        mMap.setOnInfoWindowClickListener { marker ->
+            val tienda = marker.tag as? Tienda ?: return@setOnInfoWindowClickListener
+            val frag = ListaProductosFragment().apply {
+                arguments = Bundle().apply {
+                    putString("filtro_tienda_id", tienda.id)
+                }
+            }
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.contenedor, frag)
+                .addToBackStack(null)
+                .commit()
         }
 
-        // Verifica permisos de ubicación
+        // Si vino destino por argumentos, colócalo
+        destinoLatLng?.let {
+            actualizarMarkerDestino(it, "Destino: ${direccionDestino ?: "Destino"}")
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 15f))
+            direccionDestino?.let { dir -> autocompleteDestino?.setText(dir) }
+        }
+
+        // Permisos ubicación
         if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             habilitarUbicacion()
         } else {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1001)
         }
+
+        // Carga y pinta SOLO tus tiendas (pines rojos)
+        cargarTiendasYMarcarlas()
     }
 
+    private fun actualizarMarkerDestino(pos: LatLng, titulo: String) {
+        markerDestino?.remove()
+        markerDestino = mMap.addMarker(
+            MarkerOptions()
+                .position(pos)
+                .title(titulo)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        )
+    }
 
-    // Activa la ubicación en el mapa si los permisos están concedidos.
-
+    @SuppressLint("MissingPermission")
     private fun habilitarUbicacion() {
         try {
             mMap.isMyLocationEnabled = true
             obtenerUbicacionActual()
-        } catch (e: SecurityException) {
-            e.printStackTrace()
-        }
+        } catch (_: SecurityException) {}
     }
 
-
-    // Obtiene la ubicación actual del usuario y la muestra en el mapa.
+    @SuppressLint("MissingPermission")
     private fun obtenerUbicacionActual() {
-        try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    val ubicacion = LatLng(location.latitude, location.longitude)
-                    origenLatLng = ubicacion
-                    actualizarMarkerOrigen(ubicacion, "Tu ubicación")
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                val pos = LatLng(location.latitude, location.longitude)
+                origenLatLng = pos
+                actualizarMarkerOrigen(pos, "Tu ubicación")
 
-                    // Convierte las coordenadas en una dirección legible
-                    val geocoder = Geocoder(requireContext(), Locale.getDefault())
-                    val direcciones =
-                        geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                    if (!direcciones.isNullOrEmpty()) {
-                        val direccion = direcciones[0].getAddressLine(0)
-                        autocompleteOrigen?.setText(direccion)
-                    }
+                // Autocomplete de origen con dirección legible
+                val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                val dirs = geocoder.getFromLocation(pos.latitude, pos.longitude, 1)
+                if (!dirs.isNullOrEmpty()) autocompleteOrigen?.setText(dirs[0].getAddressLine(0))
 
-                    // Busca supermercados cercanos
-                    buscarSupermercados(location.latitude, location.longitude)
-                }
+                // Si ya hay destino (por argumento o por búsqueda), dibuja la ruta
+                dibujarRuta()
             }
-        } catch (e: SecurityException) {
-            e.printStackTrace()
         }
     }
 
-
-    // Agrega o actualiza el marcador del origen en el mapa.
     private fun actualizarMarkerOrigen(pos: LatLng, titulo: String) {
         markerOrigen?.remove()
         markerOrigen = mMap.addMarker(
@@ -220,80 +269,111 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
                 .title(titulo)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
         )
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 14f))
-    }
-
-
-    // Busca supermercados cercanos al usuario utilizando la API de Google Places.
-    private fun buscarSupermercados(lat: Double, lng: Double) {
-        lifecycleScope.launch {
-            try {
-                val respuesta = placesService.buscarLugaresCercanos(
-                    ubicacion = "$lat,$lng",
-                    radio = 2000,
-                    tipo = "supermarket",
-                    apiKey = apiKey
-                )
-                // Agrega marcadores de los supermercados en el mapa
-                for (lugar in respuesta.results) {
-                    val pos = LatLng(lugar.geometry.location.lat, lugar.geometry.location.lng)
-                    mMap.addMarker(MarkerOptions().position(pos).title(lugar.name))
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        if (destinoLatLng == null) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 14f))
         }
     }
 
-    // Traza una ruta entre el origen y el destino seleccionados usando la API de Directions.
+    // ===== SOLO TIENDAS DEL BACKEND =====
+    private fun cargarTiendasYMarcarlas() {
+        lifecycleScope.launch {
+            try {
+                tiendas = backendService.listarTiendas()
+                pintarMarcadoresDeTiendas(tiendas)
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun pintarMarcadoresDeTiendas(tiendas: List<Tienda>) {
+        val bounds = LatLngBounds.Builder()
+        var anyAdded = false
+
+        tiendas.forEach { tienda ->
+            val u = tienda.ubicacion
+            if (u != null) {
+                val pos = LatLng(u.lat, u.lng)
+                val marker = mMap.addMarker(
+                    MarkerOptions()
+                        .position(pos)
+                        .title(tienda.nombre)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                )
+
+                if (marker != null) {
+                    // Relaciona el marker con la tienda (lo usamos en el InfoWindow y el click)
+                    marker.tag = tienda
+
+                    // Precarga la imagen como Bitmap para el InfoWindow
+                    if (tienda.urlImagen.isNotEmpty()) {
+                        Glide.with(this)
+                            .asBitmap()
+                            .load(tienda.urlImagen)
+                            .into(object : CustomTarget<Bitmap>() {
+                                override fun onResourceReady(
+                                    resource: Bitmap,
+                                    transition: Transition<in Bitmap>?
+                                ) {
+                                    markerIconCache[marker] = resource
+                                    if (marker.isInfoWindowShown) marker.showInfoWindow()
+                                }
+                                override fun onLoadCleared(placeholder: Drawable?) {}
+                            })
+                    }
+                }
+
+                bounds.include(pos)
+                anyAdded = true
+            }
+        }
+
+        if (anyAdded && destinoLatLng == null) {
+            try {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100))
+            } catch (_: Exception) {}
+        }
+    }
+
+    // ===== RUTA =====
     private fun dibujarRuta() {
-        if (origenLatLng == null || destinoLatLng == null) return
+        val o = origenLatLng ?: return
+        val d = destinoLatLng ?: return
 
         lifecycleScope.launch {
             try {
                 val url =
                     "https://maps.googleapis.com/maps/api/directions/json?" +
-                            "origin=${origenLatLng!!.latitude},${origenLatLng!!.longitude}" +
-                            "&destination=${destinoLatLng!!.latitude},${destinoLatLng!!.longitude}" +
+                            "origin=${o.latitude},${o.longitude}" +
+                            "&destination=${d.latitude},${d.longitude}" +
                             "&key=$apiKey"
 
-                // Ejecuta la solicitud HTTP en un hilo de fondo
-                val result = withContext(Dispatchers.IO) {
-                    URL(url).readText()
-                }
-
-                // Decodifica la respuesta JSON para obtener los puntos de la ruta
+                val result = withContext(Dispatchers.IO) { URL(url).readText() }
                 val json = JSONObject(result)
-                val puntos = json.getJSONArray("routes")
+                val routes = json.optJSONArray("routes")
+                if (routes == null || routes.length() == 0) return@launch
+
+                val puntos = routes
                     .getJSONObject(0)
                     .getJSONObject("overview_polyline")
                     .getString("points")
 
-                val decodedPath = decodePolyline(puntos)
-
-                // Dibuja la línea de la ruta en el mapa
+                val decoded = decodePolyline(puntos)
                 polylineRuta?.remove()
                 polylineRuta = mMap.addPolyline(
                     PolylineOptions()
-                        .addAll(decodedPath)
+                        .addAll(decoded)
                         .color(android.graphics.Color.BLUE)
                         .width(10f)
                 )
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            } catch (_: Exception) {}
         }
     }
 
-    // Decodifica la ruta en formato Polyline a una lista de coordenadas LatLng.
     private fun decodePolyline(encoded: String): List<LatLng> {
         val poly = ArrayList<LatLng>()
         var index = 0
         val len = encoded.length
         var lat = 0
         var lng = 0
-
-        // Algoritmo estándar de decodificación de polilínea
         while (index < len) {
             var b: Int
             var shift = 0
@@ -316,23 +396,18 @@ class MapaFragment : Fragment(), OnMapReadyCallback {
             val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
             lng += dlng
 
-            val latLng = LatLng(lat.toDouble() / 1E5, lng.toDouble() / 1E5)
-            poly.add(latLng)
+            poly.add(LatLng(lat / 1E5, lng / 1E5))
         }
         return poly
     }
 
-    // Maneja la respuesta del usuario al solicitar permisos de ubicación.
+    // Permisos
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         if (requestCode == 1001 &&
             grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
-        ) {
-            habilitarUbicacion()
-        }
+        ) habilitarUbicacion()
     }
 }

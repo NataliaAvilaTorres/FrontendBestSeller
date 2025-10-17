@@ -248,11 +248,13 @@ class FormularioNuevaOfertaFragment : Fragment() {
                     dbRef.get().addOnSuccessListener { snap ->
                         if (snap.exists()) {
                             val precioFinal: Double = precio!!
+
+                            // ✅ ÚNICO CAMBIO: guarda precio en 'precioHasta' y fecha en 'fechaHasta'
                             val updates = mapOf<String, Any>(
-                                "precio" to precioFinal,
-                                "precioHasta" to fechaFinalMillis // Campo adicional
+                                "precioHasta" to precioFinal,     // nuevo precio (Double)
+                                "fechaHasta" to fechaFinalMillis  // fecha límite (Long)
                             )
-                            // Actualizamos los valores en Firebase
+
                             dbRef.updateChildren(updates).addOnCompleteListener { task ->
                                 if (!task.isSuccessful) {
                                     Toast.makeText(
