@@ -32,6 +32,12 @@
     <string name="perfil_del_usuario">Perfil del usuario</string>
     <string name="informaci_n">Información</string>
     <string name="elige_una_categoria">☑️ Elige una categoria</string>
+    <string name="usuarios">Usuarios</string>
+    <string name="publicaciones">Publicaciones</string>
+    <string name="ajustes">Ajustes</string>
+    <string name="laura_p_rez_sarmiento">Laura Pérez Sarmiento</string>
+    <string name="cantidad_de_publicaciones_14">Cantidad de publicaciones: 14</string>
+    <string name="aprobaciones_8">Aprobaciones: 8</string>
 
     <string-array name="ciudades_array">
         <item>Selecciona tu ciudad</item>

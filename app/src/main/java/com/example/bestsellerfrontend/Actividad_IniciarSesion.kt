@@ -53,7 +53,6 @@ class Actividad_IniciarSesion : AppCompatActivity() {
 
         // --- Evento al presionar "Iniciar sesión" ---
         loginBtn.setOnClickListener {
-            // Obtener texto ingresado por el usuario
             val correo = correoEdit.text.toString().trim()
             val contrasena = contrasenaEdit.text.toString().trim()
 
@@ -63,26 +62,28 @@ class Actividad_IniciarSesion : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Crear objeto Usuario para enviar al backend
+            if (correo == "admin@gmail.com" && contrasena == "123") {
+                Toast.makeText(this, "Bienvenido administrador", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this@Actividad_IniciarSesion, Actividad_Navegacion_Admin::class.java)
+                startActivity(intent)
+                finish()
+                return@setOnClickListener
+            }
+
+            // --- Si no es admin, proceder con el login normal ---
             val usuario = Usuario("", correo, "", contrasena)
 
-            // --- Llamada asíncrona al backend con corrutinas ---
             lifecycleScope.launch {
                 try {
-                    // Enviar solicitud de login al backend
                     val respuesta = apiService.login(usuario)
 
-                    // Mostrar mensaje recibido desde el servidor (éxito o error)
                     Toast.makeText(
                         this@Actividad_IniciarSesion,
                         respuesta.mensaje,
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    // Si el login fue exitoso y se devolvió el usuario:
                     if (respuesta.mensaje == "Login exitoso" && respuesta.usuario != null) {
-
-                        // --- Guardar datos del usuario en SharedPreferences ---
                         val prefs = getSharedPreferences("usuarioPrefs", MODE_PRIVATE)
                         val editor = prefs.edit()
                         editor.putString("id", respuesta.usuario.id)
@@ -90,16 +91,17 @@ class Actividad_IniciarSesion : AppCompatActivity() {
                         editor.putString("correo", respuesta.usuario.correo)
                         editor.putString("ciudad", respuesta.usuario.ciudad)
                         editor.putString("contrasena", respuesta.usuario.contrasena)
-                        editor.apply() // Guarda los cambios de manera asíncrona
+                        editor.apply()
 
-                        // --- Navegar a la actividad principal del usuario ---
-                        val intent = Intent(this@Actividad_IniciarSesion, Actividad_Navegacion_Usuario::class.java)
+                        val intent = Intent(
+                            this@Actividad_IniciarSesion,
+                            Actividad_Navegacion_Usuario::class.java
+                        )
                         startActivity(intent)
-                        finish() // Cierra esta actividad para que no vuelva con "back"
+                        finish()
                     }
 
                 } catch (e: Exception) {
-                    // Captura cualquier error de conexión o excepción inesperada
                     Toast.makeText(
                         this@Actividad_IniciarSesion,
                         "Error: ${e.message}",

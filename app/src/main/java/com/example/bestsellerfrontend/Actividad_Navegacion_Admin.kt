@@ -1,15 +1,14 @@
 package com.example.bestsellerfrontend
 
 import android.os.Bundle
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class Actividad_Navegacion_Usuario : AppCompatActivity() {
+class Actividad_Navegacion_Admin : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.barra_navegacion)
+        setContentView(R.layout.barra_navegacion_admin)
 
         // Obtiene la referencia a la vista de navegación inferior (BottomNavigationView)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
@@ -17,62 +16,43 @@ class Actividad_Navegacion_Usuario : AppCompatActivity() {
         // Listener que maneja los clics en los ítems de la barra de navegación
         bottomNav.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-
-                // Opción "Buscar" → abre el fragmento con la lista de productos
-                R.id.buscar -> {
+                R.id.usuarios -> {
                     supportFragmentManager.beginTransaction()
                         .replace(
-                            R.id.contenedor,
-                            ListaProductosFragment()
+                            R.id.contenedorAdmin,
+                            ListaUsuariosFragment()
                         ) // Reemplaza el fragmento actual
                         .addToBackStack(null) // Permite volver al fragmento anterior
                         .commit()
                     true
                 }
-
-                // Opción "Inicio" → muestra el fragmento principal del usuario
                 R.id.inicio -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.contenedor, InicioUsuarioFragment())
+                        .replace(R.id.contenedorAdmin, Fragment_Inicio_Admin())
                         .commit()
                     true
                 }
-
-                // Opción "Oferta" → muestra el fragmento con las ofertas disponibles
-                R.id.oferta -> {
+                R.id.publicaciones -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.contenedor, ListaOfertasFragment())
+                        .replace(R.id.contenedorAdmin, ListaPublicacionesFragment())
                         .addToBackStack(null)
                         .commit()
                     true
                 }
-
-                // Opción "Ubicación" → abre el fragmento con el mapa
-                R.id.ubicacion -> {
+                R.id.ajustes -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.contenedor, MapaFragment())
+                        .replace(R.id.contenedorAdmin, FragmentActividadAjustesAdmin())
                         .addToBackStack(null)
                         .commit()
                     true
                 }
-
-                // Opción "Cámara" → abre una nueva actividad para el reconocimiento de productos
-                R.id.camara -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.contenedor, ReconocimientoFragment())
-                        .addToBackStack(null)
-                        .commit()
-                    true
-                }
-
                 // Si ninguna opción coincide, no se realiza ninguna acción
                 else -> false
             }
         }
-
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.contenedor, InicioUsuarioFragment())
+                .replace(R.id.contenedorAdmin, Fragment_Inicio_Admin())
                 .commit()
             bottomNav.selectedItemId = R.id.inicio
         }

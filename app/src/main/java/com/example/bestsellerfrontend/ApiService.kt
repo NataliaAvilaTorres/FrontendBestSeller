@@ -225,4 +225,8 @@ interface ApiService {
         @Query("type") tipo: String = "supermarket",
         @Query("key") apiKey: String
     ): RespuestaLugares
+
+
+    @GET("api/usuarios/listar")
+    suspend fun listarUsuarios(): List<Usuario>
 }
