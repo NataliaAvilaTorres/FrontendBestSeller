@@ -32,7 +32,7 @@ class Actividad_IniciarSesion : AppCompatActivity() {
         // --- Configuración de Retrofit ---
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8090/")
-            //.baseUrl("http://192.168.1.16:8090/")
+            //.baseUrl("http://192.168.0.7:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 

@@ -1,5 +1,6 @@
 package com.example.bestsellerfrontend
 
+import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
@@ -7,6 +8,8 @@ import retrofit2.http.PUT
 import retrofit2.http.DELETE
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Multipart
+import retrofit2.http.Part
 
 
 interface ApiService {
@@ -226,6 +229,21 @@ interface ApiService {
         @Query("key") apiKey: String
     ): RespuestaLugares
 
+    // -------------------------------
+    // 🔹 NUTRICIÓN (Google Cloud Vision)
+    // -------------------------------
+
+    /**
+     * Envía una imagen de tabla nutricional al backend para ser analizada
+     * usando Google Cloud Vision API.
+     * @param image Imagen en formato Multipart
+     * @return Objeto [AnalisisNutricional] con nutrientes detectados y recomendaciones
+     */
+    @Multipart
+    @POST("api/nutricion/analizar")
+    suspend fun analizarTablaNutricional(
+        @Part image: MultipartBody.Part
+    ): AnalisisNutricional
 
     @GET("api/usuarios/listar")
     suspend fun listarUsuarios(): List<Usuario>
