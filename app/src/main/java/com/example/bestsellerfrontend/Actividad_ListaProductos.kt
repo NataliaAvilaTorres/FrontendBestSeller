@@ -25,7 +25,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlin.math.*
 
-
 class ListaProductosFragment : Fragment() {
 
     private lateinit var recyclerViewProductos: RecyclerView
@@ -49,6 +48,9 @@ class ListaProductosFragment : Fragment() {
     private var ordenAscendente: Boolean? = null
     private lateinit var fusedClient: FusedLocationProviderClient
 
+    // Para prellenar el buscador con la marca seleccionada
+    private var queryInicial: String? = null
+
     // --- Permisos de ubicación ---
     private val locationPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -71,8 +73,14 @@ class ListaProductosFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.actividad_lista_productos, container, false)
 
+        // Mantienes tu lógica existente:
         tiendaSeleccionadaId = arguments?.getString("filtro_tienda_id")
 
+        // Leer query inicial
+        queryInicial = arguments?.getString("query_inicial")
+        if (queryInicial.isNullOrBlank()) {
+            queryInicial = activity?.intent?.getStringExtra("query_inicial")
+        }
 
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
         btnRegresar.setOnClickListener {
@@ -127,6 +135,14 @@ class ListaProductosFragment : Fragment() {
         }
         recyclerViewTiendas.adapter = adapterTiendas
 
+        // --- ⚠️ Inicializar ANTES de setQuery: productos y coincidencias ---
+        recyclerViewProductos = view.findViewById(R.id.recyclerViewProductos)
+        recyclerViewProductos.layoutManager = LinearLayoutManager(requireContext())
+        adapterProductos = ProductoAdaptador(emptyList(), listaCompletaTiendas)
+        recyclerViewProductos.adapter = adapterProductos
+
+        textViewCoincidencias = view.findViewById(R.id.textViewCoincidencias)
+
         // --- Barra de búsqueda de tiendas ---
         searchViewTiendas = view.findViewById(R.id.searchviewTiendas)
         searchViewTiendas.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -134,7 +150,6 @@ class ListaProductosFragment : Fragment() {
                 filtrarTiendas(query)
                 return true
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 filtrarTiendas(newText)
                 return true
@@ -149,7 +164,6 @@ class ListaProductosFragment : Fragment() {
                 aplicarFiltros()
                 return true
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 textoBusquedaProducto = newText
                 aplicarFiltros()
@@ -157,15 +171,13 @@ class ListaProductosFragment : Fragment() {
             }
         })
 
-        // --- Coincidencias y botones de orden ---
-        textViewCoincidencias = view.findViewById(R.id.textViewCoincidencias)
+        // --- Botones de orden y cercanía ---
         btnOrdenAsc = view.findViewById(R.id.btnOrdenAsc)
         btnOrdenDesc = view.findViewById(R.id.btnOrdenDesc)
+        btnCerca = view.findViewById(R.id.btnCerca)
+
         btnOrdenAsc.setOnClickListener { ordenAscendente = true; aplicarFiltros() }
         btnOrdenDesc.setOnClickListener { ordenAscendente = false; aplicarFiltros() }
-
-        // --- Botón para ordenar tiendas por cercanía ---
-        btnCerca = view.findViewById(R.id.btnCerca)
         btnCerca.setOnClickListener { pedirUbicacionYOrdenarTiendas() }
 
         // --- Configuración de Retrofit (API REST) ---
@@ -175,11 +187,10 @@ class ListaProductosFragment : Fragment() {
             .build()
         apiService = retrofit.create(ApiService::class.java)
 
-        // --- RecyclerView de productos ---
-        recyclerViewProductos = view.findViewById(R.id.recyclerViewProductos)
-        recyclerViewProductos.layoutManager = LinearLayoutManager(requireContext())
-        adapterProductos = ProductoAdaptador(emptyList(), listaCompletaTiendas)
-        recyclerViewProductos.adapter = adapterProductos
+        // --- Prellenar y disparar búsqueda SOLO después de tener todo inicializado ---
+        queryInicial?.let { q ->
+            searchViewProductos.setQuery(q, true)
+        }
 
         // --- Cargar datos desde la API ---
         lifecycleScope.launch {
@@ -217,6 +228,10 @@ class ListaProductosFragment : Fragment() {
 
     /** Aplica todos los filtros combinados: categoría, tienda, búsqueda y orden */
     private fun aplicarFiltros() {
+        // Guards para evitar crashes si se llama demasiado pronto
+        if (!::recyclerViewProductos.isInitialized) return
+        if (!::textViewCoincidencias.isInitialized) return
+
         var productosFiltrados = productos
 
         categoriaSeleccionada?.let { categoria ->
@@ -258,7 +273,6 @@ class ListaProductosFragment : Fragment() {
         }
         adapterTiendas.actualizarLista(filtradas)
     }
-
 
     /** Solicita permisos de ubicación al usuario */
     private fun pedirUbicacionYOrdenarTiendas() {

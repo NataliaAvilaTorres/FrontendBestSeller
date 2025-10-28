@@ -42,5 +42,6 @@
         <activity android:name=".Actividad_Registro" />
         <activity android:name=".Actividad_Navegacion_Usuario" />
         <activity android:name=".Actividad_Navegacion_Admin" />
+        <activity android:name=".ReconocimientoActivity"/>
     </application>
 </manifest>

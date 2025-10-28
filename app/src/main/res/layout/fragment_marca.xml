@@ -44,6 +44,16 @@
                 android:text="Selecciona una imagen del producto"
                 android:textSize="15sp"
                 android:padding="16dp" />
+
+            <!-- ⬇️ AÑADE AQUÍ EL CONTENEDOR -->
+            <LinearLayout
+                android:id="@+id/containerButtons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="12dp"
+                android:divider="@android:color/transparent"
+                android:showDividers="middle" />
         </androidx.cardview.widget.CardView>
     </LinearLayout>
 </ScrollView>
