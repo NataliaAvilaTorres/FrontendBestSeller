@@ -8,12 +8,6 @@
         android:title="Dashboard"/>
 
     <item
-        android:id="@+id/inicio"
-        android:enabled="true"
-        android:title="@string/inicio"
-        android:icon="@drawable/ic_inicio" />
-
-    <item
         android:id="@+id/usuarios"
         android:enabled="true"
         android:title="@string/usuarios"

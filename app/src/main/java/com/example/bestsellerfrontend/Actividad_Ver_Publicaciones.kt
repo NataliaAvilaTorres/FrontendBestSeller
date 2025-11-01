@@ -19,7 +19,6 @@ import android.widget.Toast
 
 class Actividad_Ver_Publicaciones : Fragment() {
 
-    // --- Variables principales ---
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: OfertaAdaptador
     private lateinit var apiService: ApiService
@@ -40,75 +39,49 @@ class Actividad_Ver_Publicaciones : Fragment() {
 
         // --- CONFIGURAR RECYCLER VIEW ---
         recyclerView = view.findViewById(R.id.recyclerMisPublicaciones)
-        recyclerView.layoutManager =
-            LinearLayoutManager(requireContext()) // Organiza los elementos en una lista vertical
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // --- CONFIGURAR RETROFIT PARA CONECTAR CON EL BACKEND ---
+        // --- CONFIGURAR RETROFIT ---
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.0.2.2:8090/")
-            .baseUrl("http://192.168.1.13:8090/")
+            .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        // Inicializa el servicio API
         apiService = retrofit.create(ApiService::class.java)
 
-        // Crea el adaptador vacío inicialmente
+        // ✅ IMPORTANTE: mostrarBotones = true para que aparezcan botones de Editar/Eliminar
         adapter = OfertaAdaptador(emptyList(), requireContext(), apiService, mostrarBotones = true)
         recyclerView.adapter = adapter
 
-        // --- OBTENER ID DEL USUARIO DESDE SharedPreferences ---
-        val prefs =
-            requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
-        val usuarioId =
-            prefs.getString("id", null) // Recupera el ID guardado durante el login o registro
+        // --- OBTENER ID DEL USUARIO ---
+        val prefs = requireContext().getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
+        val usuarioId = prefs.getString("id", null)
 
-        // --- CARGAR PUBLICACIONES DEL USUARIO ---
-        if (usuarioId != null) {
-            // Llamada asincrónica con corrutinas para no bloquear la interfaz
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    // Obtiene las publicaciones del usuario desde el backend
-                    publicaciones = apiService.listarOfertasUsuario(usuarioId)
-                    // Actualiza el adaptador con los datos recibidos
-                    adapter.actualizarLista(publicaciones)
-                } catch (e: Exception) {
-                    e.printStackTrace() // Imprime el error en el log
-                }
-            }
-        }
-
-        // --- TEXTVIEWS PARA MOSTRAR ESTADÍSTICAS ---
+        // --- TEXTVIEWS PARA ESTADÍSTICAS ---
         val tvNumeroPublicaciones = view.findViewById<TextView>(R.id.tvNumeroPublicaciones)
         val tvLikesRecibidos = view.findViewById<TextView>(R.id.tvLikesRecibidos)
 
-        // --- CARGAR NÚMERO DE PUBLICACIONES Y TOTAL DE LIKES ---
+        // --- CARGAR PUBLICACIONES DEL USUARIO ---
         if (usuarioId != null) {
-            lifecycleScope.launch {
+            viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    // Obtiene nuevamente las publicaciones (para asegurar datos actualizados)
                     publicaciones = apiService.listarOfertasUsuario(usuarioId)
                     adapter.actualizarLista(publicaciones)
 
-                    // Muestra la cantidad total de publicaciones
+                    // Actualizar estadísticas
                     tvNumeroPublicaciones.text = publicaciones.size.toString()
-
-                    // Calcula la suma de likes recibidos en todas las publicaciones
                     val totalLikes = publicaciones.sumOf { it.likes }
                     tvLikesRecibidos.text = totalLikes.toString()
 
                 } catch (e: Exception) {
-                    // Si ocurre un error en la conexión o procesamiento
                     e.printStackTrace()
+                    Toast.makeText(requireContext(), "Error al cargar publicaciones", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
-            // Si no se encuentra un usuario logueado, muestra un mensaje de error
-            Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT).show()
         }
 
-        // Retorna la vista creada para que se muestre en pantalla
         return view
     }
 }

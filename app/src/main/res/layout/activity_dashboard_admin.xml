@@ -20,19 +20,13 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="24dp">
 
-            <ImageView
-                android:id="@+id/btnRegresar"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_atras"
-                android:contentDescription="Regresar"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="📊 Dashboard"
+                android:fontFamily="@font/urbanist_extrabold"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
@@ -87,6 +81,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="👥 Usuarios"
+                        android:fontFamily="@font/urbanist_semibold"
                         android:textSize="14sp"
                         android:textColor="#FFFFFF"
                         android:layout_marginTop="4dp"/>
@@ -123,6 +118,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="📦 Productos"
+                        android:fontFamily="@font/urbanist_semibold"
                         android:textSize="14sp"
                         android:textColor="#FFFFFF"
                         android:layout_marginTop="4dp"/>
@@ -159,6 +155,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🎉 Ofertas"
+                        android:fontFamily="@font/urbanist_semibold"
                         android:textSize="14sp"
                         android:textColor="#FFFFFF"
                         android:layout_marginTop="4dp"/>
@@ -195,6 +192,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🏪 Tiendas"
+                        android:fontFamily="@font/urbanist_semibold"
                         android:textSize="14sp"
                         android:textColor="#FFFFFF"
                         android:layout_marginTop="4dp"/>
@@ -220,6 +218,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="📈 Ofertas Publicadas (Últimos 7 días)"
+                    android:fontFamily="@font/urbanist_bold"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
@@ -250,6 +249,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="🍰 Productos por Categoría"
+                    android:fontFamily="@font/urbanist_semibold"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
@@ -280,6 +280,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="❤️ Top 5 Ofertas Más Populares"
+                    android:fontFamily="@font/urbanist_semibold"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
@@ -309,6 +310,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="🔔 Actividad Reciente"
+                    android:fontFamily="@font/urbanist_semibold"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"

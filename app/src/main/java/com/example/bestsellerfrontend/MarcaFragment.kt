@@ -29,6 +29,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import android.graphics.Color
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 
 class ReconocimientoFragment : Fragment() {
 
@@ -71,7 +77,7 @@ class ReconocimientoFragment : Fragment() {
 
 class MarcaFragment : Fragment() {
 
-    private lateinit var btnSelect: Button
+    private lateinit var btnSelect: MaterialButton
     private lateinit var imageView: ImageView
     private lateinit var textView: TextView
     private lateinit var buttonsContainer: LinearLayout
@@ -199,24 +205,44 @@ class MarcaFragment : Fragment() {
 
             // Título de la sección
             textView.text = "🎯 Resultados (elige una marca):"
-            // Limpiamos y creamos 3 botones
+
+            // Limpiamos y creamos 3 botones con estilo mejorado
             buttonsContainer.removeAllViews()
 
             results.forEachIndexed { i, pred ->
                 val label = if (pred.index < labels.size) labels[pred.index] else "Desconocido"
                 val confianza = (pred.value * 100).toInt()
 
-                val btn = Button(requireContext()).apply {
-                    text = "${i + 1}. $label  (${confianza}%)"
+                val btn = MaterialButton(requireContext()).apply {
+                    text = "$label • $confianza%"
                     isAllCaps = false
                     textSize = 16f
-                    setPadding(24, 24, 24, 24)
+
+                    // Colores atractivos por posición
+                    val bgColor = when (i) {
+                        0 -> Color.parseColor("#007AFF") // Azul (mejor confianza)
+                        1 -> Color.parseColor("#5AC8FA") // Azul claro
+                        else -> Color.parseColor("#34C759") // Verde
+                    }
+                    setBackgroundColor(bgColor)
+                    setTextColor(Color.WHITE)
+
+                    cornerRadius = 12
+                    elevation = 6f
+
+                    setPadding(24, 20, 24, 20)
+
                     layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply { topMargin = 12 }
+                    ).apply {
+                        topMargin = 8
+                        bottomMargin = 8
+                    }
+
                     setOnClickListener { irAListaProductosConMarca(label) }
                 }
+
                 buttonsContainer.addView(btn)
             }
 
@@ -240,9 +266,6 @@ class MarcaFragment : Fragment() {
             .addToBackStack(null)
             .commit()
     }
-
-
-
 
     override fun onDestroy() {
         super.onDestroy()
@@ -319,8 +342,8 @@ class NutricionFragment : Fragment() {
                 .build()
 
             val request = Request.Builder()
-                //.url("http://10.0.2.2:8090/api/nutricion/analizar")
-                .url("http://192.168.1.13:8090/api/nutricion/analizar")
+                .url("http://10.0.2.2:8090/api/nutricion/analizar")
+                //.url("http://192.168.1.13:8090/api/nutricion/analizar")
                 .post(multipartBody)
                 .build()
 

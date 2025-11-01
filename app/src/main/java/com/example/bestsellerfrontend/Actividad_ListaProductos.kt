@@ -182,8 +182,8 @@ class ListaProductosFragment : Fragment() {
 
         // --- Configuración de Retrofit (API REST) ---
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.0.2.2:8090/") // Dirección local del backend (emulador)
-            .baseUrl("http://192.168.1.13:8090/")
+            .baseUrl("http://10.0.2.2:8090/") // Dirección local del backend (emulador)
+            //.baseUrl("http://192.168.1.13:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)

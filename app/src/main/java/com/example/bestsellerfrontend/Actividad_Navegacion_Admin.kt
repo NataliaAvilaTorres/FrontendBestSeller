@@ -33,12 +33,6 @@ class Actividad_Navegacion_Admin : AppCompatActivity() {
                         .commit()
                     true
                 }
-                R.id.inicio -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.contenedorAdmin, Fragment_Inicio_Admin())
-                        .commit()
-                    true
-                }
                 R.id.publicaciones -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.contenedorAdmin, ListaPublicacionesFragment())
@@ -59,9 +53,9 @@ class Actividad_Navegacion_Admin : AppCompatActivity() {
         }
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.contenedorAdmin, Fragment_Inicio_Admin())
+                .replace(R.id.contenedorAdmin, DashboardAdminFragment())
                 .commit()
-            bottomNav.selectedItemId = R.id.inicio
+            bottomNav.selectedItemId = R.id.dashboard
         }
     }
 }

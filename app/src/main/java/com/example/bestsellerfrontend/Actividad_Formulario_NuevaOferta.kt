@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -22,22 +23,21 @@ import java.util.*
 
 class FormularioNuevaOfertaFragment : Fragment() {
 
-    // Servicio API para interactuar con el backend
     private lateinit var apiService: ApiService
-
-    // Elementos de la interfaz
     private lateinit var recyclerViewCategorias: RecyclerView
     private lateinit var adapterCategorias: CategoriaAdaptador
 
-    // Variables para manejo de fecha
     private val cal = Calendar.getInstance()
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-    // Listas y elementos seleccionados
     private var tiendas: List<Tienda> = emptyList()
     private var tiendaSeleccionada: Tienda? = null
     private var productos: List<Producto> = emptyList()
     private var productoSeleccionado: Producto? = null
+
+    // Variables para modo edición
+    private var modoEdicion = false
+    private var ofertaIdEditar: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,10 +50,15 @@ class FormularioNuevaOfertaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // --- Detectar modo: ¿Crear o Editar? ---
+        modoEdicion = arguments?.getString("modo") == "editar"
+        ofertaIdEditar = arguments?.getString("oferta_id")
+
+        Log.d("FormularioOferta", "Modo: ${if (modoEdicion) "EDITAR" else "CREAR"}")
+
         // --- Configuración de Retrofit ---
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.0.2.2:8090/")
-            .baseUrl("http://192.168.1.13:8090/")
+            .baseUrl("http://10.0.2.2:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
@@ -68,6 +73,25 @@ class FormularioNuevaOfertaFragment : Fragment() {
         val btnRegresar = view.findViewById<ImageView>(R.id.btnRegresar)
         val etNombreOferta = view.findViewById<TextInputEditText>(R.id.etNombreOferta)
 
+        // ✅ Cambiar título y botón si es edición
+        if (modoEdicion) {
+            btnGuardar.text = "💾 Guardar Cambios"
+
+            // Pre-llenar campos desde los argumentos
+            etNombreOferta.setText(arguments?.getString("oferta_nombre") ?: "")
+            etDescripcion.setText(arguments?.getString("oferta_descripcion") ?: "")
+
+            val fechaFinal = arguments?.getLong("oferta_fecha_final", 0L) ?: 0L
+            if (fechaFinal > 0) {
+                val formatoFecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                etFechaFinal.setText(formatoFecha.format(Date(fechaFinal)))
+            }
+
+            // El precio se cargará desde Firebase cuando se seleccione el producto
+        } else {
+            btnGuardar.text = "➕ Crear Oferta"
+        }
+
         // --- Cargar tiendas desde la API ---
         viewLifecycleOwner.lifecycleScope.launch {
             try {
@@ -81,7 +105,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
                     return@launch
                 }
 
-                // Llenamos el autocompletado con los nombres de las tiendas
                 val adapterTiendas = ArrayAdapter(
                     requireContext(),
                     android.R.layout.simple_dropdown_item_1line,
@@ -91,12 +114,23 @@ class FormularioNuevaOfertaFragment : Fragment() {
                 autoTienda.setAdapter(adapterTiendas)
                 autoTienda.setOnClickListener { autoTienda.showDropDown() }
 
-                // Cuando el usuario selecciona una tienda
+                // ✅ Si es edición, pre-seleccionar la tienda
+                if (modoEdicion) {
+                    val tiendaIdEditar = arguments?.getString("oferta_tienda_id")
+                    if (!tiendaIdEditar.isNullOrEmpty()) {
+                        val tiendaIndex = tiendas.indexOfFirst { it.id == tiendaIdEditar }
+                        if (tiendaIndex >= 0) {
+                            autoTienda.setText(tiendas[tiendaIndex].nombre, false)
+                            tiendaSeleccionada = tiendas[tiendaIndex]
+                            cargarProductosPorTienda(tiendaIdEditar, autoProducto, etNombreOferta)
+                        }
+                    }
+                }
+
                 autoTienda.setOnItemClickListener { _, _, position, _ ->
                     tiendaSeleccionada = tiendas[position]
                     val tiendaId = tiendaSeleccionada?.id
 
-                    // Validamos el ID de la tienda
                     if (tiendaId.isNullOrEmpty()) {
                         Toast.makeText(
                             requireContext(),
@@ -111,15 +145,12 @@ class FormularioNuevaOfertaFragment : Fragment() {
                         "Tienda seleccionada: ${tiendaSeleccionada?.nombre}, id=$tiendaId"
                     )
 
-                    // Cargamos los productos correspondientes a esa tienda
                     cargarProductosPorTienda(tiendaId, autoProducto, etNombreOferta)
                 }
 
             } catch (e: Exception) {
-                // Si ocurre un error al obtener tiendas
                 Log.e("FormularioNuevaOferta", "Error cargando tiendas: ${e.message}", e)
-                Toast.makeText(requireContext(), "Error cargando tiendas", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Error cargando tiendas", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -128,7 +159,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
         recyclerViewCategorias.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
 
-        // Lista de categorías (ícono + nombre)
         val categorias: List<Pair<Int, String>> = listOf(
             Pair(R.drawable.bebida, "Bebidas"),
             Pair(R.drawable.enlatados, "Enlatados"),
@@ -138,7 +168,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
             Pair(R.drawable.pastasyharinas, "Pastas y Harinas")
         )
 
-        // Adaptador personalizado con clic en cada categoría
         adapterCategorias = CategoriaAdaptador(
             categorias,
             onCategoriaClick = { categoriaSeleccionada ->
@@ -153,7 +182,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
             val y = cal.get(Calendar.YEAR)
             val m = cal.get(Calendar.MONTH)
             val d = cal.get(Calendar.DAY_OF_MONTH)
-            // Mostramos el DatePicker
             DatePickerDialog(requireContext(), { _, year, month, dayOfMonth ->
                 cal.set(year, month, dayOfMonth, 0, 0, 0)
                 cal.set(Calendar.MILLISECOND, 0)
@@ -163,13 +191,12 @@ class FormularioNuevaOfertaFragment : Fragment() {
 
         // --- Botón de guardar oferta ---
         btnGuardar.setOnClickListener {
-            // Obtenemos valores ingresados
             val descripcion = etDescripcion.text?.toString()?.trim().orEmpty()
             val fechaFinalStr = etFechaFinal.text?.toString()?.trim().orEmpty()
             val precioStr = etProdPrecio.text?.toString()?.trim().orEmpty()
             val precio = precioStr.toDoubleOrNull()
 
-            // Validamos campos requeridos
+            // Validaciones
             val camposFaltantes = mutableListOf<String>()
             if (tiendaSeleccionada == null) camposFaltantes.add("Tienda")
             if (productoSeleccionado == null) camposFaltantes.add("Producto")
@@ -177,7 +204,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
             if (fechaFinalStr.isEmpty()) camposFaltantes.add("Fecha final")
             if (precio == null) camposFaltantes.add("Precio")
 
-            // Si faltan datos, se notifica al usuario
             if (camposFaltantes.isNotEmpty()) {
                 Toast.makeText(
                     requireContext(),
@@ -187,134 +213,199 @@ class FormularioNuevaOfertaFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // Convertimos la fecha final a milisegundos
+            // ✅ Validar que el nuevo precio sea menor al precio original
+            if (precio!! >= productoSeleccionado!!.precio) {
+                Toast.makeText(
+                    requireContext(),
+                    "El precio de la oferta debe ser menor a $${productoSeleccionado!!.precio}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
             val fechaFinalMillis = try {
                 dateFormat.parse(fechaFinalStr)?.time ?: cal.timeInMillis
             } catch (_: Exception) {
                 cal.timeInMillis
             }
 
-            // Creamos el objeto oferta
-            val nuevaOferta = Oferta(
-                nombreOferta = etNombreOferta.text?.toString()?.trim().orEmpty(),
-                descripcionOferta = descripcion,
-                tiendaId = tiendaSeleccionada!!.id,
-                fechaOferta = System.currentTimeMillis(),
-                fechaFinal = fechaFinalMillis,
-                productoId = productoSeleccionado!!.id,
-                ubicacion = tiendaSeleccionada!!.ubicacion
-            )
-
-            // Obtenemos el ID del usuario logueado
-            val prefs = requireContext().getSharedPreferences(
-                "usuarioPrefs",
-                AppCompatActivity.MODE_PRIVATE
-            )
-            val usuarioId = prefs.getString("id", null)
-            if (usuarioId == null) {
-                Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT)
-                    .show()
-                return@setOnClickListener
-            }
-
-            // Llamada asíncrona para crear la oferta y actualizar Firebase
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    // Crear oferta en el backend
-                    val respuesta = apiService.crearOferta(usuarioId, nuevaOferta)
-                    Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
+                    if (modoEdicion && ofertaIdEditar != null) {
+                        // ✅ MODO EDITAR
+                        Log.d("FormularioOferta", "Editando oferta: $ofertaIdEditar")
 
-                    // Actualizar producto existente en Firebase
-                    val tiendaId = tiendaSeleccionada!!.id
-                    val productoId = productoSeleccionado!!.id
+                        val ofertaActualizada = Oferta(
+                            id = ofertaIdEditar!!,
+                            nombreOferta = etNombreOferta.text?.toString()?.trim().orEmpty(),
+                            descripcionOferta = descripcion,
+                            tiendaId = tiendaSeleccionada!!.id,
+                            fechaOferta = System.currentTimeMillis(),
+                            fechaFinal = fechaFinalMillis,
+                            productoId = productoSeleccionado!!.id,
+                            ubicacion = tiendaSeleccionada!!.ubicacion
+                        )
 
-                    // Validamos que el producto tenga ID
-                    if (productoId.isNullOrEmpty()) {
-                        Toast.makeText(
-                            requireContext(),
-                            "Producto sin ID válido; no se actualizó",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        requireActivity().onBackPressedDispatcher.onBackPressed()
-                        return@launch
-                    }
+                        // ❌ No llamar al backend para evitar que elimine la oferta
+                        Log.d("FormularioOferta", "Actualizando solo Firebase")
 
-                    val dbRef = com.google.firebase.database.FirebaseDatabase.getInstance()
-                        .getReference("productos")
-                        .child(tiendaId)
-                        .child(productoId)
+                        // Actualizar precioHasta en Firebase
+                        val tiendaId = tiendaSeleccionada!!.id
+                        val productoId = productoSeleccionado!!.id
 
-                    // Verificamos si el producto existe antes de modificarlo
-                    dbRef.get().addOnSuccessListener { snap ->
-                        if (snap.exists()) {
-                            val precioFinal: Double = precio!!
-
-                            // ✅ ÚNICO CAMBIO: guarda precio en 'precioHasta' y fecha en 'fechaHasta'
-                            val updates = mapOf<String, Any>(
-                                "precioHasta" to precioFinal,     // nuevo precio (Double)
-                                "fechaHasta" to fechaFinalMillis  // fecha límite (Long)
-                            )
-
-                            dbRef.updateChildren(updates).addOnCompleteListener { task ->
-                                if (!task.isSuccessful) {
-                                    Toast.makeText(
-                                        requireContext(),
-                                        "No se pudo actualizar el producto",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                                // Regresamos a la pantalla anterior
-                                requireActivity().onBackPressedDispatcher.onBackPressed()
-                            }
-                        } else {
-                            // Si no existe, no hacemos nada
+                        if (tiendaId.isNullOrEmpty() || productoId.isNullOrEmpty()) {
                             Toast.makeText(
                                 requireContext(),
-                                "El producto no existe en la tienda. No se creó ningún nodo.",
-                                Toast.LENGTH_LONG
+                                "Producto o tienda sin ID válido",
+                                Toast.LENGTH_SHORT
                             ).show()
                             requireActivity().onBackPressedDispatcher.onBackPressed()
+                            return@launch
                         }
-                    }.addOnFailureListener {
-                        Toast.makeText(
-                            requireContext(),
-                            "Error al verificar el producto",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        requireActivity().onBackPressedDispatcher.onBackPressed()
+
+                        val dbRef = FirebaseDatabase.getInstance()
+                            .getReference("productos")
+                            .child(tiendaId)
+                            .child(productoId)
+
+                        Log.d("Firebase", "Editando producto: productos/$tiendaId/$productoId")
+
+                        val updatesEditar = mapOf<String, Any>(
+                            "precioHasta" to precio!!,
+                            "fechaHasta" to fechaFinalMillis
+                        )
+
+                        dbRef.updateChildren(updatesEditar)
+                            .addOnSuccessListener {
+                                Log.d("Firebase", "✅ Oferta editada en Firebase")
+                                Toast.makeText(
+                                    requireContext(),
+                                    "✅ Oferta actualizada correctamente",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                requireActivity().onBackPressedDispatcher.onBackPressed()
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e("Firebase", "❌ Error: ${exception.message}", exception)
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Error al actualizar: ${exception.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                requireActivity().onBackPressedDispatcher.onBackPressed()
+                            }
+
+                    } else {
+                        // ✅ MODO CREAR (código original)
+                        val nuevaOferta = Oferta(
+                            nombreOferta = etNombreOferta.text?.toString()?.trim().orEmpty(),
+                            descripcionOferta = descripcion,
+                            tiendaId = tiendaSeleccionada!!.id,
+                            fechaOferta = System.currentTimeMillis(),
+                            fechaFinal = fechaFinalMillis,
+                            productoId = productoSeleccionado!!.id,
+                            ubicacion = tiendaSeleccionada!!.ubicacion
+                        )
+
+                        val prefs = requireContext().getSharedPreferences(
+                            "usuarioPrefs",
+                            AppCompatActivity.MODE_PRIVATE
+                        )
+                        val usuarioId = prefs.getString("id", null)
+                        if (usuarioId == null) {
+                            Toast.makeText(requireContext(), "Error: usuario no logueado", Toast.LENGTH_SHORT).show()
+                            return@launch
+                        }
+
+                        val respuesta = apiService.crearOferta(usuarioId, nuevaOferta)
+                        Log.d("Firebase", "Oferta creada: ${respuesta.mensaje}")
+                        Toast.makeText(requireContext(), respuesta.mensaje, Toast.LENGTH_SHORT).show()
+
+                        val tiendaId = tiendaSeleccionada!!.id
+                        val productoId = productoSeleccionado!!.id
+
+                        if (productoId.isNullOrEmpty()) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Producto sin ID válido",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
+                            return@launch
+                        }
+
+                        val dbRef = FirebaseDatabase.getInstance()
+                            .getReference("productos")
+                            .child(tiendaId)
+                            .child(productoId)
+
+                        Log.d("Firebase", "Ruta: productos/$tiendaId/$productoId")
+
+                        val updates = mapOf<String, Any>(
+                            "precioHasta" to precio!!,
+                            "fechaHasta" to fechaFinalMillis
+                        )
+
+                        dbRef.updateChildren(updates)
+                            .addOnSuccessListener {
+                                Log.d("Firebase", "✅ Actualización exitosa")
+                                Toast.makeText(
+                                    requireContext(),
+                                    "✅ Oferta creada y producto actualizado",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                requireActivity().onBackPressedDispatcher.onBackPressed()
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e("Firebase", "❌ Error: ${exception.message}", exception)
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Error al actualizar Firebase: ${exception.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                requireActivity().onBackPressedDispatcher.onBackPressed()
+                            }
                     }
 
                 } catch (e: Exception) {
-                    // Si ocurre algún error general
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG)
-                        .show()
+                    Log.e("Firebase", "❌ Excepción: ${e.message}", e)
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
 
-        // --- Botón regresar ---
         btnRegresar.setOnClickListener { parentFragmentManager.popBackStack() }
     }
 
-    // --- Función para cargar productos de una tienda seleccionada ---
     private fun cargarProductosPorTienda(
-        tiendaId: String,
+        tiendaId: String?,
         autoProducto: MaterialAutoCompleteTextView,
         etNombreOferta: TextInputEditText
     ) {
+        if (tiendaId.isNullOrEmpty()) return
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 productos = apiService.listarProductosTienda(tiendaId)
                 actualizarAutoCompleteProductos(productos, autoProducto, etNombreOferta)
+
+                // ✅ Si es edición, pre-seleccionar el producto
+                if (modoEdicion) {
+                    val productoIdEditar = arguments?.getString("oferta_producto_id")
+                    if (!productoIdEditar.isNullOrEmpty()) {
+                        val productoSeleccionadoObj = productos.find { it.id == productoIdEditar }
+                        if (productoSeleccionadoObj != null) {
+                            productoSeleccionado = productoSeleccionadoObj
+                            autoProducto.setText(productoSeleccionadoObj.nombre, false)
+                        }
+                    }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(requireContext(), "Error cargando productos", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Error cargando productos", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // --- Filtrar productos por categoría seleccionada ---
     private fun filtrarProductosPorCategoria(
         categoria: String,
         autoProducto: MaterialAutoCompleteTextView,
@@ -324,15 +415,13 @@ class FormularioNuevaOfertaFragment : Fragment() {
             it.marca.categoria.trim().equals(categoria.trim(), ignoreCase = true)
         }
         if (filtrados.isEmpty()) {
-            Toast.makeText(requireContext(), "No hay productos en '$categoria'", Toast.LENGTH_SHORT)
-                .show()
+            Toast.makeText(requireContext(), "No hay productos en '$categoria'", Toast.LENGTH_SHORT).show()
             autoProducto.setAdapter(null)
             return
         }
         actualizarAutoCompleteProductos(filtrados, autoProducto, etNombreOferta)
     }
 
-    // --- Adaptar autocompletado de productos según la lista ---
     private fun actualizarAutoCompleteProductos(
         listaProductos: List<Producto>,
         autoProducto: MaterialAutoCompleteTextView,
@@ -348,7 +437,6 @@ class FormularioNuevaOfertaFragment : Fragment() {
         autoProducto.setAdapter(adapterProductos)
         autoProducto.setOnClickListener { autoProducto.showDropDown() }
 
-        // Cuando se selecciona un producto
         autoProducto.setOnItemClickListener { _, _, position, _ ->
             productoSeleccionado = listaProductos[position]
             etNombreOferta.setText("Oferta en ${productoSeleccionado?.nombre}")

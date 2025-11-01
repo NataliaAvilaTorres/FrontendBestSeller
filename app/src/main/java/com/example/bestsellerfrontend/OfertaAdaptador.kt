@@ -25,11 +25,10 @@ class OfertaAdaptador(
     private val mostrarBotones: Boolean = false
 ) : RecyclerView.Adapter<OfertaAdaptador.OfertaViewHolder>() {
 
-    // Caches
     private val productosCache: MutableMap<String, Producto> = mutableMapOf()
     private val tiendasCache: MutableMap<String, Tienda> = mutableMapOf()
     private var productosCargados = false
-    private var tiendasCargadas = false
+    private var tiendasCargados = false
 
     class OfertaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textNombre: TextView = itemView.findViewById(R.id.nombreOferta)
@@ -44,8 +43,6 @@ class OfertaAdaptador(
         val userName: TextView = itemView.findViewById(R.id.userName)
         val imagenProducto: ImageView = itemView.findViewById(R.id.imagenOferta)
         val fechaHasta: TextView = itemView.findViewById(R.id.fechaHasta)
-
-        // NUEVOS / CAMBIADOS
         val precioNuevo: TextView = itemView.findViewById(R.id.precioNuevo)
         val imagenTienda: ImageView = itemView.findViewById(R.id.imagenTienda)
         val nombreTienda: TextView = itemView.findViewById(R.id.nombreTienda)
@@ -60,41 +57,37 @@ class OfertaAdaptador(
     override fun onBindViewHolder(holder: OfertaViewHolder, position: Int) {
         val oferta = listaOfertas[position]
 
-        // Título / descripción
         holder.textNombre.text = "🎉 ${oferta.nombreOferta}"
         holder.textDescripcion.text = oferta.descripcionOferta
 
-        // Fechas
         val formatoCabecera = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         holder.textFecha.text = formatoCabecera.format(Date(oferta.fechaOferta))
 
         val dfHasta = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
         holder.fechaHasta.text = "Hasta ${dfHasta.format(Date(oferta.fechaFinal))}"
 
-        // ====== PRECIO NUEVO (solo uno) ======
-        // Buscamos el producto para obtener precioHasta (nuevo). Si no hay, usamos precio normal.
-        val productoId = oferta.productoId
-        if (!productoId.isNullOrEmpty()) {
-            val cacheado = productosCache[productoId]
-            if (cacheado != null) {
-                bindPrecioNuevo(holder, cacheado)
-            } else {
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        if (!productosCargados) {
-                            val productos = apiService.listarProductos()
-                            productos.forEach { p -> p.id?.let { productosCache[it] = p } }
-                            productosCargados = true
-                        }
-                        val prod = productosCache[productoId]
-                        withContext(Dispatchers.Main) {
-                            if (prod != null) bindPrecioNuevo(holder, prod)
-                            else holder.precioNuevo.text = "$ 0"
-                        }
-                    } catch (_: Exception) {
-                        withContext(Dispatchers.Main) { holder.precioNuevo.text = "$ 0" }
+        // ====== PRECIO NUEVO (desde Firebase) ======
+        if (!oferta.productoId.isNullOrEmpty() && !oferta.tiendaId.isNullOrEmpty()) {
+            val refProducto = FirebaseDatabase.getInstance().getReference("productos")
+                .child(oferta.tiendaId)
+                .child(oferta.productoId!!)
+
+            refProducto.get().addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val precioHasta = snapshot.child("precioHasta").getValue(Double::class.java)
+                    val precio = snapshot.child("precio").getValue(Double::class.java)
+
+                    val nf = NumberFormat.getInstance(Locale.getDefault()).apply {
+                        maximumFractionDigits = 2
                     }
+
+                    val precioMostrar = precioHasta ?: precio ?: 0.0
+                    holder.precioNuevo.text = "💰 \$${nf.format(precioMostrar)}"
+                } else {
+                    holder.precioNuevo.text = "$ 0"
                 }
+            }.addOnFailureListener {
+                holder.precioNuevo.text = "$ 0"
             }
         } else {
             holder.precioNuevo.text = "$ 0"
@@ -108,10 +101,10 @@ class OfertaAdaptador(
         } else {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    if (!tiendasCargadas) {
+                    if (!tiendasCargados) {
                         val tiendas = apiService.listarTiendas()
                         tiendas.forEach { t -> tiendasCache[t.id] = t }
-                        tiendasCargadas = true
+                        tiendasCargados = true
                     }
                     val tienda = tiendasCache[tiendaId]
                     withContext(Dispatchers.Main) {
@@ -130,7 +123,7 @@ class OfertaAdaptador(
             }
         }
 
-        // ====== Usuario (como lo tenías) ======
+        // ====== Usuario ======
         if (!oferta.usuarioId.isNullOrEmpty()) {
             val ref = FirebaseDatabase.getInstance()
                 .getReference("usuarios")
@@ -153,7 +146,7 @@ class OfertaAdaptador(
             }
         }
 
-        // Imagen de producto (tu lógica actual desde Firebase productos)
+        // ====== Imagen de producto ======
         if (!oferta.productoId.isNullOrEmpty()) {
             val refProductos = FirebaseDatabase.getInstance().getReference("productos")
             refProductos.get().addOnSuccessListener { snapshot ->
@@ -177,14 +170,14 @@ class OfertaAdaptador(
             }
         }
 
-        // Likes (igual que antes)
+        // ====== Likes ======
         val prefs = context.getSharedPreferences("usuarioPrefs", AppCompatActivity.MODE_PRIVATE)
         val usuarioIdSesion = prefs.getString("id", null)
         val yaDioLike = usuarioIdSesion != null && (oferta.likedBy[usuarioIdSesion] == true)
         holder.tvLikeCount.text = oferta.likes.toString()
         holder.btnLike.setColorFilter(
-            if (yaDioLike) ContextCompat.getColor(context, R.color.rojo)
-            else ContextCompat.getColor(context, R.color.black)
+            if (yaDioLike) ContextCompat.getColor(context, android.R.color.holo_red_dark)
+            else ContextCompat.getColor(context, android.R.color.black)
         )
         holder.btnLike.setOnClickListener {
             if (usuarioIdSesion == null) {
@@ -196,15 +189,15 @@ class OfertaAdaptador(
             oferta.likes = if (nuevoEstado) oferta.likes + 1 else maxOf(0, oferta.likes - 1)
             holder.tvLikeCount.text = oferta.likes.toString()
             holder.btnLike.setColorFilter(
-                if (nuevoEstado) ContextCompat.getColor(context, R.color.rojo)
-                else ContextCompat.getColor(context, R.color.black)
+                if (nuevoEstado) ContextCompat.getColor(context, android.R.color.holo_red_dark)
+                else ContextCompat.getColor(context, android.R.color.black)
             )
             CoroutineScope(Dispatchers.IO).launch {
                 try { apiService.toggleLike(oferta.id, usuarioIdSesion, nuevoEstado) } catch (_: Exception) {}
             }
         }
 
-        // Ver ubicación → Mapa con destino
+        // ====== Ver ubicación → Mapa con destino ======
         holder.textUbicacion.setOnClickListener {
             val ubicacion = oferta.ubicacion
             if (ubicacion != null) {
@@ -225,19 +218,31 @@ class OfertaAdaptador(
             }
         }
 
-        // Botones editar/eliminar (igual)
+        // ====== Botones editar/eliminar ======
         if (mostrarBotones) {
             holder.btnEditar?.visibility = View.VISIBLE
             holder.btnEliminar?.visibility = View.VISIBLE
+
+            // ✅ BOTÓN EDITAR - Pasar datos al formulario
             holder.btnEditar?.setOnClickListener {
                 val fragment = FormularioNuevaOfertaFragment().apply {
-                    arguments = Bundle().apply { putSerializable("oferta", oferta) }
+                    arguments = Bundle().apply {
+                        putString("modo", "editar")                                           // Modo edición
+                        putString("oferta_id", oferta.id)                                     // ID de la oferta
+                        putString("oferta_nombre", oferta.nombreOferta)                       // Nombre
+                        putString("oferta_descripcion", oferta.descripcionOferta)             // Descripción
+                        putString("oferta_tienda_id", oferta.tiendaId)                        // Tienda ID
+                        putString("oferta_producto_id", oferta.productoId)                    // Producto ID
+                        putLong("oferta_fecha_final", oferta.fechaFinal)                      // Fecha final
+                    }
                 }
                 (context as AppCompatActivity).supportFragmentManager.beginTransaction()
                     .replace(R.id.contenedor, fragment)
                     .addToBackStack(null)
                     .commit()
             }
+
+            // ✅ BOTÓN ELIMINAR
             holder.btnEliminar?.setOnClickListener {
                 AlertDialog.Builder(context)
                     .setTitle("Eliminar oferta")
@@ -261,12 +266,6 @@ class OfertaAdaptador(
             holder.btnEditar?.visibility = View.GONE
             holder.btnEliminar?.visibility = View.GONE
         }
-    }
-
-    private fun bindPrecioNuevo(holder: OfertaViewHolder, producto: Producto) {
-        val nf = NumberFormat.getInstance(Locale.getDefault()).apply { maximumFractionDigits = 0 }
-        val nuevo = producto.precioHasta ?: producto.precio
-        holder.precioNuevo.text = "$ ${nf.format(nuevo)}"
     }
 
     private fun bindTienda(holder: OfertaViewHolder, tienda: Tienda) {

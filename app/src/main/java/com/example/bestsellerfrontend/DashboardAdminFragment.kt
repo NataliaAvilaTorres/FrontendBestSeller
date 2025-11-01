@@ -83,17 +83,14 @@ class DashboardAdminFragment : Fragment() {
 
     private fun configurarRetrofit() {
         val retrofit = Retrofit.Builder()
-            //.baseUrl("http://10.0.2.2:8090/")
-            .baseUrl("http://192.168.1.13:8090/")
+            .baseUrl("http://10.0.2.2:8090/")
+            //.baseUrl("http://192.168.1.13:8090/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         apiService = retrofit.create(ApiService::class.java)
     }
 
     private fun configurarBotones(view: View) {
-        view.findViewById<ImageView>(R.id.btnRegresar).setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
 
         view.findViewById<ImageView>(R.id.btnRefresh).setOnClickListener {
             cargarDatos()
