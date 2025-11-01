@@ -319,7 +319,8 @@ class NutricionFragment : Fragment() {
                 .build()
 
             val request = Request.Builder()
-                .url("http://10.0.2.2:8090/api/nutricion/analizar")
+                //.url("http://10.0.2.2:8090/api/nutricion/analizar")
+                .url("http://192.168.1.13:8090/api/nutricion/analizar")
                 .post(multipartBody)
                 .build()
 

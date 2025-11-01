@@ -13,9 +13,16 @@ class Actividad_Navegacion_Admin : AppCompatActivity() {
         // Obtiene la referencia a la vista de navegación inferior (BottomNavigationView)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
+
         // Listener que maneja los clics en los ítems de la barra de navegación
         bottomNav.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
+                R.id.dashboard -> {  // ← Agregar esta opción
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.contenedorAdmin, DashboardAdminFragment())
+                        .commit()
+                    true
+                }
                 R.id.usuarios -> {
                     supportFragmentManager.beginTransaction()
                         .replace(

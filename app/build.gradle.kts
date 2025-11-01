@@ -91,6 +91,12 @@ dependencies {
     implementation("com.google.maps.android:android-maps-utils:2.3.0")
     implementation("com.google.android.libraries.places:places:3.5.0")
 
+
+    // Para gráficos
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+// Para cards con diseño moderno
+    implementation("com.google.android.material:material:1.11.0")
+
     // 🔹 Glide (para mostrar imágenes)
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
@@ -107,4 +113,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+
+
 }
